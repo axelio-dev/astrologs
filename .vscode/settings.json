@@ -1,0 +1,25 @@
+{
+  // Format automatique à la sauvegarde
+  "editor.formatOnSave": true,
+
+  // Biome comme formateur par défaut
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+
+  // Facultatif : ajuste la largeur de la ligne pour Tailwind
+  "editor.wordWrapColumn": 120,
+  "editor.rulers": [120],
+
+  // Pour éviter que VSCode applique un autre formateur en conflit
+  "editor.defaultFormatter": "biomejs.biome"
+}
