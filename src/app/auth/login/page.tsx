@@ -1,13 +1,13 @@
-import { exo } from "@/app/layout";
-import Link from "next/link";
-import { Mail, Lock, ArrowRight } from "lucide-react";
+"use client";
 
-export const metadata = {
-  title: "Astrologs | Login",
-  description: "Please login to access to the dashboard",
-};
+import { useState } from "react";
+import { exo } from "@/app/auth/login/font";
+import { metadata } from "@/app/auth/login/layout";
+import { ArrowRight, Lock, Mail, Eye, EyeOff } from "lucide-react";
+import Link from "next/link";
 
 export default function Login() {
+  const [showPassword, setShowPassword] = useState(false);
   return (
     <main>
       <div className="min-h-screen flex items-center justify-center bg-[url('/pexels-thirdman-8495471.jpg')] bg-cover bg-center">
@@ -53,12 +53,21 @@ export default function Login() {
               </label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Your password"
-                  className="w-full pl-12 py-3 rounded-3xl bg-white focus:outline-none"
+                  className="w-full pl-12 pr-12 py-3 rounded-3xl bg-white focus:outline-none"
                 />
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="cursor-pointer absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
+                >
+                  {showPassword ? <EyeOff /> : <Eye />}
+                </button>
               </div>
             </div>
 
