@@ -63,7 +63,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
+                className="cursor-pointer absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
               >
                 {showPassword ? <EyeOff /> : <Eye />}
               </button>
@@ -72,7 +72,7 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full mt-10 py-3 px-6 rounded-full font-medium text-black bg-white hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
+            className="cursor-pointer w-full mt-10 py-3 px-6 rounded-full font-medium text-black bg-white hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
           >
             Login
             <ArrowRight className="w-5 h-5" />
