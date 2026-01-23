@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { exo } from "@/app/auth/login/font";
-import { ArrowRight, Lock, Mail, Eye, EyeOff, LogIn } from "lucide-react";
+import { exo } from "@/app/fonts";
+import { Lock, Mail, Eye, EyeOff, LogIn } from "lucide-react";
 import Link from "next/link";
 
 export default function Login() {
