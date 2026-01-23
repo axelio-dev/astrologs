@@ -1,15 +1,15 @@
 "use client";
 
-import { exo } from "@/app/auth/login/font";
-import { ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
+import { exo } from "@/app/auth/login/font";
+import { ArrowRight, Lock, Mail, Eye, EyeOff } from "lucide-react";
+import Link from "next/link";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[url('/pexels-thirdman-8495471.jpg')] bg-cover bg-center">
+    <main className="min-h-screen flex items-center justify-center bg-[url('/pexels-thirdman-8495471.webp')] bg-cover bg-center">
       <section className="w-full max-w-md border border-white/20 rounded-2xl bg-white/10 backdrop-blur-md shadow-xl p-8">
         <header>
           <h1
