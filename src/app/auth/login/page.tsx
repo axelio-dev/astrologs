@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { exo } from "@/app/auth/login/font";
-import { ArrowRight, Lock, Mail, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Lock, Mail, Eye, EyeOff, LogIn } from "lucide-react";
 import Link from "next/link";
 
 export default function Login() {
@@ -75,7 +75,7 @@ export default function Login() {
             className="cursor-pointer w-full mt-10 py-3 px-6 rounded-full font-medium text-black bg-white hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
           >
             Login
-            <ArrowRight className="w-5 h-5" />
+            <LogIn className="w-5 h-5" />
           </button>
         </form>
 
