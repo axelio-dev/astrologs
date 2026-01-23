@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { ReactNode } from "react";
 
 export const metadata: Metadata = {
   title: "Astrologs | Login",
@@ -8,12 +7,8 @@ export const metadata: Metadata = {
 
 export default function LoginLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
-  return (
-    <html lang="en">
-      <body className="">{children}</body>
-    </html>
-  );
+}) {
+  return <div className="login-layout">{children}</div>;
 }
