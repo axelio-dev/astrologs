@@ -8,6 +8,34 @@ import Link from "next/link";
 export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
 
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, email, password }),
+    });
+
+    const text = await res.text();
+
+    try {
+      const data = JSON.parse(text);
+      if (!res.ok) {
+        alert(data.error);
+        return;
+      }
+      alert("User registered successfull!");
+    } catch (err) {
+      console.error("Response is not JSON:", text);
+      alert("Server error occurred.");
+    }
+  };
+
   return (
     <main className="min-h-screen flex items-center justify-center px-4 bg-[url('/pexels-thirdman-8495471.webp')] bg-cover bg-center">
       <section className="w-full max-w-md border border-white/20 rounded-2xl bg-white/10 backdrop-blur-md shadow-xl p-4 sm:p-6 scale-95 sm:scale-100">
@@ -24,7 +52,7 @@ export default function Register() {
           </h2>
         </header>
 
-        <form className="mt-4 space-y-3 sm:space-y-4">
+        <form onSubmit={handleSubmit} className="mt-4 space-y-3 sm:space-y-4">
           <div className="flex flex-col gap-1">
             <label
               htmlFor="username"
@@ -38,6 +66,8 @@ export default function Register() {
                 id="username"
                 type="text"
                 placeholder="NebulaRider"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 className="w-full pl-12 py-2.5 sm:py-3 rounded-3xl bg-white focus:outline-none placeholder:text-gray-400"
               />
             </div>
@@ -56,6 +86,8 @@ export default function Register() {
                 id="email"
                 type="text"
                 placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-12 py-2.5 sm:py-3 rounded-3xl bg-white focus:outline-none placeholder:text-gray-400"
               />
             </div>
@@ -75,6 +107,8 @@ export default function Register() {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Andromeda@42"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full pl-12 pr-12 py-2.5 sm:py-3 rounded-3xl bg-white focus:outline-none placeholder:text-gray-400"
               />
 
