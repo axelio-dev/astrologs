@@ -4,6 +4,7 @@ import { useState } from "react";
 import { exo } from "@/app/fonts";
 import { User, Lock, Mail, Eye, EyeOff, LogIn } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
@@ -11,28 +12,36 @@ export default function Register() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, password }),
-    });
-
-    const text = await res.text();
+    setStatus("idle");
 
     try {
-      const data = JSON.parse(text);
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, email, password }),
+      });
+
+      const data = await res.json();
+
       if (!res.ok) {
-        alert(data.error);
+        setStatus("error");
+        toast.error(data.error ?? "Registration failed");
         return;
       }
-      alert("User registered successfull!");
-    } catch (err) {
-      console.error("Response is not JSON:", text);
-      alert("Server error occurred.");
+
+      setStatus("success");
+      toast.success("Account created successfully!");
+
+      setUsername("");
+      setEmail("");
+      setPassword("");
+    } catch {
+      setStatus("error");
+      toast.error("Server error. Please try again.");
     }
   };
 
