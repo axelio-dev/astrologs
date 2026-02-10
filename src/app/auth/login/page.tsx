@@ -68,7 +68,7 @@ export default function Login() {
           className="object-cover"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-tr from-red-700/40 via-red-600/10 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-red-800 via-red-600/10 to-transparent pointer-events-none" />
 
         <div className="absolute bottom-20 left-15">
           <h1
@@ -144,7 +144,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
@@ -169,7 +169,7 @@ export default function Login() {
           </button>
         </form>
 
-        <footer className="mt-8 flex items-center space-x-2">
+        <footer className="mt-7.5 flex items-center space-x-2">
           <p className="text-gray-500 text-sm">Don't have an account?</p>
           <Link
             href="/auth/register"
