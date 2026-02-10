@@ -2,22 +2,24 @@ import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <div>
-      <h1>Home page</h1>
+    <div className="text-center mt-[25px]">
+      <h1 className="font-bold text-red-600 text-lg">Welcome in Astrologs !</h1>
       <p>
-        To log in, click on{" "}
+        <Link href="/dashboard" className="text-blue-500 underline">
+          Dashboard
+        </Link>
+      </p>
+      <p>
         <Link href="/auth/login" className="text-blue-500 underline">
-          the login page
+          Login
         </Link>
-        .
       </p>
       <p>
-        To register, click on{" "}
         <Link href="/auth/register" className="text-blue-500 underline">
-          the register page
+          Register
         </Link>
-        .
       </p>
+      <p className="italic">This page is not currently developed</p>
     </div>
   );
 }

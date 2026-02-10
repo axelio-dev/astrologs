@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "Astrologs | Login",
@@ -10,5 +11,10 @@ export default function LoginLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <div className="login-layout">{children}</div>;
+  return (
+    <div className="login-layout">
+      {children}
+      <Toaster position="bottom-right" richColors />
+    </div>
+  );
 }

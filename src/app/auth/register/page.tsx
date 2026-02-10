@@ -5,43 +5,57 @@ import { exo } from "@/app/fonts";
 import { User, Lock, Mail, Eye, EyeOff, LogIn } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { signUp, signIn } from "../../../lib/auth-client";
+import { useRouter } from "next/navigation";
 
 export default function Register() {
-  const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
 
+  const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!username || !email || !password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    if (password.length < 8) {
+      toast.error("Password must be at least 8 characters long");
+      return;
+    }
+
     setStatus("idle");
 
     try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password }),
+      const { data, error } = await signUp.email({
+        email,
+        password,
+        name: username, // On utilise la valeur de l'input username pour le champ 'name'
+        // On ne passe pas 'username' ici si Better Auth ne l'attend pas explicitement
+        // dans sa configuration de base.
+        callbackURL: "/dashboard",
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
+      if (error) {
+        toast.error(error.message || "An error occurred");
         setStatus("error");
-        toast.error(data.error ?? "Registration failed");
         return;
       }
 
+      toast.success("Account created! Redirecting...");
       setStatus("success");
-      toast.success("Account created successfully!");
 
-      setUsername("");
-      setEmail("");
-      setPassword("");
-    } catch {
+      // Pas besoin de signIn.email ici, Better Auth le fait déjà.
+      router.push("/dashboard");
+      router.refresh(); // Pour mettre à jour l'état de la session
+    } catch (err) {
+      toast.error("Something went wrong");
       setStatus("error");
-      toast.error("Server error. Please try again.");
     }
   };
 
@@ -93,7 +107,7 @@ export default function Register() {
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
               <input
                 id="email"
-                type="text"
+                type="email"
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -111,7 +125,6 @@ export default function Register() {
             </label>
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-
               <input
                 id="password"
                 type={showPassword ? "text" : "password"}
