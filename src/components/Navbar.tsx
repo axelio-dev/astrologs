@@ -1,8 +1,34 @@
-import { Telescope, Bell, Settings, LogOut, User } from "lucide-react";
+"use client";
+
+import { Telescope, Settings, LogOut, User } from "lucide-react";
 import { exo } from "@/app/fonts";
-import Link from "next/link";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function Navbar() {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await authClient.signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            toast.success("See you soon!");
+            router.push("/auth/login");
+            router.refresh();
+          },
+          onError: (ctx) => {
+            toast.error(ctx.error.message || "Error while logout");
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("An unexpected error occurred");
+    }
+  };
+
   return (
     <nav className="flex items-center justify-between bg-white px-6 py-5 border-b border-gray-200">
       <div className="flex items-center gap-6">
@@ -22,17 +48,21 @@ export default function Navbar() {
       </div>
 
       <div className="flex items-center gap-6 text-gray-600">
-        <div className="relative p-1 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors">
+        <button className="p-1 rounded-lg hover:bg-gray-100 transition-colors">
           <User className="h-5 w-5" />
-        </div>
-        <div className="relative p-1 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors">
-          <Settings className="h-6 w-6 cursor-pointer transition-colors" />
-        </div>
-        <div className="relative p-1 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors">
-          <Link href="/auth/logout">
-            <LogOut className="h-6 w-6 cursor-pointer hover:text-red-600 transition-colors" />
-          </Link>
-        </div>
+        </button>
+
+        <button className="p-1 rounded-lg hover:bg-gray-100 transition-colors">
+          <Settings className="h-6 w-6" />
+        </button>
+
+        <button
+          onClick={handleLogout}
+          className="p-1 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors group"
+          title="Déconnexion"
+        >
+          <LogOut className="h-6 w-6 group-hover:text-red-600 transition-colors" />
+        </button>
       </div>
     </nav>
   );
