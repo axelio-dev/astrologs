@@ -3,9 +3,9 @@
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { LogOut, Rocket, User as UserIcon } from "lucide-react";
-import { exo } from "@/app/fonts";
+import { Rocket } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import Sidebar from "@/components/Sidebar";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -31,8 +31,9 @@ export default function Dashboard() {
     );
 
   return (
-    <main className="bg-black h-full w-full">
+    <main className="h-full w-full">
       <Navbar />
+      <Sidebar />
     </main>
   );
 }
