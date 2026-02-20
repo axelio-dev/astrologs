@@ -52,7 +52,7 @@ export default function Register() {
         return;
       }
 
-      toast.success("Account created! Welcome astronaut.");
+      toast.success("Account created! Welcome!");
       setStatus("success");
 
       router.push("/dashboard");
