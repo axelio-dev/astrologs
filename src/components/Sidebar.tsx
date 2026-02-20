@@ -16,7 +16,7 @@ const menuItems = [
   { name: "Home", icon: Home, href: "/dashboard" },
   { name: "Sessions", icon: Camera, href: "/dashboard/sessions" },
   { name: "Publications", icon: Share2, href: "/dashboard/publications" },
-  { name: "Ephemeris", icon: Calendar, href: "/dashboard/calendar" },
+  { name: "Ephemeris", icon: Calendar, href: "/dashboard/ephemeris" },
   { name: "Gallery", icon: ImageIcon, href: "/dashboard/gallery" },
   { name: "Equipments", icon: Package, href: "/dashboard/equipments" },
 ];
