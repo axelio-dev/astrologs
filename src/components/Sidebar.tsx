@@ -14,11 +14,11 @@ import { usePathname } from "next/navigation";
 
 const menuItems = [
   { name: "Home", icon: Home, href: "/dashboard" },
-  { name: "Sessions", icon: Camera, href: "/sessions" },
-  { name: "Publications", icon: Share2, href: "/publications" },
-  { name: "Ephemeris", icon: Calendar, href: "/calendar" },
-  { name: "Gallery", icon: ImageIcon, href: "/gallery" },
-  { name: "Equipments", icon: Package, href: "/equipments" },
+  { name: "Sessions", icon: Camera, href: "/dashboard/sessions" },
+  { name: "Publications", icon: Share2, href: "/dashboard/publications" },
+  { name: "Ephemeris", icon: Calendar, href: "/dashboard/calendar" },
+  { name: "Gallery", icon: ImageIcon, href: "/dashboard/gallery" },
+  { name: "Equipments", icon: Package, href: "/dashboard/equipments" },
 ];
 
 export default function Sidebar() {
