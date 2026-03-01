@@ -1,10 +1,11 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import { Rocket, Camera } from "lucide-react";
+import { Rocket, Camera, Telescope, Tent, Clock, Share } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import { exo } from "../fonts";
+import StatCard from "@/components/StatCard";
 
 export default function Dashboard() {
   const { data: session, isPending } = authClient.useSession();
@@ -38,6 +39,32 @@ export default function Dashboard() {
                 </p>
               </div>
             </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-5">
+            <StatCard
+              title="Sessions this month"
+              icon={Tent}
+              description="+0% vs last month"
+              value="0"
+            />
+            <StatCard
+              title="Images captured"
+              icon={Camera}
+              description="+18% vs last month"
+              value="260"
+            />
+            <StatCard
+              title="Total time"
+              icon={Clock}
+              description="+18% vs last month"
+              value="4h 45m 30s"
+            />
+            <StatCard
+              title="Publications"
+              icon={Share}
+              description="+18% vs last month"
+              value="2"
+            />
           </div>
         </main>
       </div>
