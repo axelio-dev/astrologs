@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())    // génération automatique
+  id            String    @id @default(cuid())
   name          String
   username      String?   @unique
   email         String
@@ -16,11 +16,41 @@ model User {
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
   sessions      Session[]
   accounts      Account[]
 
+  equipments    Equipment[]
+
   @@unique([email])
   @@map("user")
+}
+
+model Equipment {
+  id              String   @id @default(cuid())
+
+  name            String
+  category        EquipmentCategory
+  manufacturer    String?
+
+  acquisitionDate DateTime?
+  status          EquipmentStatus @default(ACTIVE)
+
+  diameterSensor  String?
+  focalResolution String?
+  fdRatio         String?
+  otherSpec       String?
+
+  notes           String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("equipment")
 }
 
 model Session {
@@ -51,7 +81,7 @@ model Account {
   accessTokenExpiresAt  DateTime?
   refreshTokenExpiresAt DateTime?
   scope                 String?
-  password              String?   // stocke le hash bcrypt
+  password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
@@ -69,4 +99,20 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+enum EquipmentCategory {
+  TELESCOPE
+  CAMERA
+  MOUNT
+  FILTER
+  ACCESSORY
+  OTHER
+}
+
+enum EquipmentStatus {
+  ACTIVE
+  REPAIR
+  FOR_SALE
+  DAMAGED
 }
