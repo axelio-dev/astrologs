@@ -67,3 +67,37 @@ export async function getUserEquipments() {
     },
   });
 }
+
+export async function deleteEquipment(id: string) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) throw new Error("Non autorisé");
+
+  await prisma.equipment.delete({
+    where: { id, userId: session.user.id },
+  });
+  revalidatePath("/equipments");
+  return { success: true };
+}
+
+export async function updateEquipment(id: string, formData: FormData) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) throw new Error("Non autorisé");
+
+  const data = {
+    name: formData.get("name") as string,
+    category: formData.get("category") as EquipmentCategory,
+    manufacturer: formData.get("manufacturer") as string,
+    status: formData.get("status") as EquipmentStatus,
+    diameterSensor: formData.get("diameterSensor") as string,
+    focalResolution: formData.get("focalResolution") as string,
+    fdRatio: formData.get("fdRatio") as string,
+    notes: formData.get("notes") as string,
+  };
+
+  await prisma.equipment.update({
+    where: { id, userId: session.user.id },
+    data,
+  });
+  revalidatePath("/equipments");
+  return { success: true };
+}
