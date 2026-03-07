@@ -5,15 +5,11 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 
-/**
- * Utilitaire pour extraire les données du FormData
- */
 function getSessionData(formData: FormData, userId: string) {
   const telescopeId = formData.get("telescopeId") as string;
   const cameraId = formData.get("cameraId") as string;
   const mountId = formData.get("mountId") as string;
 
-  // ⚡ récupération correcte des filtres
   const filterIds = formData.getAll("filterIds") as string[];
 
   return {
@@ -39,13 +35,10 @@ function getSessionData(formData: FormData, userId: string) {
 
     mountId: mountId || null,
 
-    filterIds, // ✅ maintenant correct
+    filterIds,
   };
 }
 
-/**
- * CRÉER une session
- */
 export async function createAstroSession(formData: FormData) {
   const session = await auth.api.getSession({ headers: await headers() });
 
@@ -71,9 +64,6 @@ export async function createAstroSession(formData: FormData) {
   }
 }
 
-/**
- * MODIFIER une session
- */
 export async function updateAstroSession(id: string, formData: FormData) {
   const session = await auth.api.getSession({ headers: await headers() });
 
@@ -103,9 +93,6 @@ export async function updateAstroSession(id: string, formData: FormData) {
   }
 }
 
-/**
- * RÉCUPÉRER les sessions de l'utilisateur
- */
 export async function getUserSessions() {
   const session = await auth.api.getSession({ headers: await headers() });
 
@@ -121,9 +108,6 @@ export async function getUserSessions() {
   });
 }
 
-/**
- * SUPPRIMER une session
- */
 export async function deleteSession(id: string) {
   const session = await auth.api.getSession({ headers: await headers() });
 
