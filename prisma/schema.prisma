@@ -21,6 +21,7 @@ model User {
   accounts      Account[]
 
   equipments    Equipment[]
+  astroSessions AstroSession[]
 
   @@unique([email])
   @@map("user")
@@ -51,6 +52,34 @@ model Equipment {
 
   @@index([userId])
   @@map("equipment")
+}
+
+model AstroSession {
+  id            String        @id @default(cuid())
+  target        String
+  date          DateTime      @default(now())
+  totalDuration String?
+  
+  telescopeId   String?
+  cameraId      String?
+  mountId       String?
+  
+  frameCount    Int           @default(0)
+  exposureTime  Float?
+  notes         String?
+  status        SessionStatus @default(IN_PROGRESS)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  filterIds     String[]      @default([])
+  accessoryIds  String[]      @default([])
+
+  @@index([userId])
+  @@map("astro_session")
 }
 
 model Session {
@@ -115,4 +144,10 @@ enum EquipmentStatus {
   REPAIR
   FOR_SALE
   DAMAGED
+}
+
+enum SessionStatus {
+  IN_PROGRESS
+  PROCESSING
+  COMPLETED
 }

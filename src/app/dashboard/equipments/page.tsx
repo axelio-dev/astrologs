@@ -159,7 +159,7 @@ export default function Equipments() {
                           Statut
                         </span>
                         <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold   tracking-wider ${
                             item.status === "ACTIVE"
                               ? "bg-green-100 text-green-700"
                               : "bg-amber-100 text-amber-700"
@@ -183,7 +183,7 @@ export default function Equipments() {
 
                       <div className="h-px bg-gray-100 my-4" />
 
-                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-2">
+                      <p className="text-[10px] text-gray-400   font-bold tracking-widest mb-2">
                         Specifications
                       </p>
 
@@ -220,7 +220,7 @@ export default function Equipments() {
 
                       {item.notes && (
                         <div className="mt-4 pt-4 border-t border-gray-50">
-                          <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">
+                          <p className="text-[10px] text-gray-400   font-bold tracking-widest mb-1">
                             Notes
                           </p>
                           <p className="text-xs italic text-gray-700 leading-relaxed">
@@ -236,197 +236,209 @@ export default function Equipments() {
           </div>
 
           {showAddModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-              <div className="bg-white w-full max-w-180 max-h-[90vh] rounded-2xl shadow-xl flex flex-col">
-                <div className="flex justify-between items-center p-6 border-b">
-                  <h2 className={`${exo.className} text-xl font-semibold`}>
-                    {editingItem ? "Edit Equipment" : "Add Equipment"}
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+              <div className="bg-white w-full max-w-4xl lg:max-w-5xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+                <div className="p-6 border-b flex justify-between items-center">
+                  <h2 className="text-xl font-bold flex items-center gap-2">
+                    {editingItem ? (
+                      <>
+                        <Edit2 size={20} />
+                        Edit equipment
+                      </>
+                    ) : (
+                      <>
+                        <Plus size={20} />
+                        Add equipment
+                      </>
+                    )}
                   </h2>
+
                   <button
                     onClick={() => {
                       setShowAddModal(false);
                       setEditingItem(null);
                     }}
-                    className="text-gray-400 hover:text-gray-700 cursor-pointer"
+                    className="text-gray-400 hover:text-gray-600 cursor-pointer"
                   >
-                    <X size={20} />
+                    <X size={22} />
                   </button>
                 </div>
 
                 <form
                   action={handleSubmit}
-                  className="flex flex-col overflow-hidden"
+                  className="p-6 overflow-y-auto space-y-5"
                 >
-                  <div className="overflow-y-auto p-6 space-y-5">
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700">
+                      Equipment name *
+                    </label>
+
+                    <input
+                      name="name"
+                      required
+                      defaultValue={editingItem?.name}
+                      placeholder="Ex: Newton Telescope 200mm"
+                      className="w-full mt-1 border border-gray-200 bg-gray-50 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm text-gray-700 font-medium">
-                        Equipment name *
+                      <label className="text-sm font-semibold text-gray-700">
+                        Category *
                       </label>
-                      <input
-                        name="name"
+
+                      <select
+                        name="category"
                         required
-                        defaultValue={editingItem?.name}
-                        type="text"
-                        placeholder="Ex: Newton Telescope 200mm"
-                        className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-700 outline-none"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-sm text-gray-700 font-medium">
-                          Category *
-                        </label>
-                        <select
-                          name="category"
-                          required
-                          defaultValue={editingItem?.category}
-                          className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-700 outline-none"
-                        >
-                          <option value="TELESCOPE">Telescope</option>
-                          <option value="CAMERA">Camera</option>
-                          <option value="MOUNT">Mount</option>
-                          <option value="FILTER">Filter</option>
-                          <option value="ACCESSORY">Accessory</option>
-                          <option value="OTHER">Other</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="text-sm text-gray-700 font-medium">
-                          Manufacturer
-                        </label>
-                        <input
-                          name="manufacturer"
-                          defaultValue={editingItem?.manufacturer}
-                          type="text"
-                          placeholder="Ex: Sky-Watcher"
-                          className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-700 outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-sm text-gray-700 font-medium">
-                          Acquisition date
-                        </label>
-                        <input
-                          name="acquisitionDate"
-                          defaultValue={
-                            editingItem?.acquisitionDate
-                              ? new Date(editingItem.acquisitionDate)
-                                  .toISOString()
-                                  .split("T")[0]
-                              : ""
-                          }
-                          type="date"
-                          className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-700 outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-sm text-gray-700 font-medium">
-                          Status
-                        </label>
-                        <select
-                          name="status"
-                          defaultValue={editingItem?.status || "ACTIVE"}
-                          className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-700 outline-none"
-                        >
-                          <option value="ACTIVE">Active</option>
-                          <option value="REPAIR">Repair in progress</option>
-                          <option value="FOR_SALE">For sale</option>
-                          <option value="DAMAGED">Damaged</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="border-t pt-4">
-                      <h3
-                        className={`${exo.className} text-md font-semibold text-gray-800 mb-3`}
+                        defaultValue={editingItem?.category}
+                        className="w-full mt-1 border border-gray-200 bg-gray-50 rounded-xl p-3"
                       >
-                        Specifications
-                      </h3>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-sm text-gray-700 font-medium">
-                            Diameter / Sensor
-                          </label>
-                          <input
-                            name="diameterSensor"
-                            defaultValue={editingItem?.diameterSensor}
-                            type="text"
-                            placeholder="Ex: 200mm / APS-C"
-                            className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-700 outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-sm text-gray-700 font-medium">
-                            Focal length / Resolution
-                          </label>
-                          <input
-                            name="focalResolution"
-                            defaultValue={editingItem?.focalResolution}
-                            type="text"
-                            placeholder="Ex: 1000mm / 26MP"
-                            className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-700 outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-sm text-gray-700 font-medium">
-                            F/D Ratio
-                          </label>
-                          <input
-                            name="fdRatio"
-                            defaultValue={editingItem?.fdRatio}
-                            type="text"
-                            placeholder="Ex: f/5"
-                            className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-700 outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-sm text-gray-700 font-medium">
-                            Other
-                          </label>
-                          <input
-                            name="otherSpec"
-                            defaultValue={editingItem?.otherSpec}
-                            type="text"
-                            placeholder="Optional"
-                            className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-700 outline-none"
-                          />
-                        </div>
-                      </div>
+                        <option value="TELESCOPE">Telescope</option>
+                        <option value="CAMERA">Camera</option>
+                        <option value="MOUNT">Mount</option>
+                        <option value="FILTER">Filter</option>
+                        <option value="ACCESSORY">Accessory</option>
+                        <option value="OTHER">Other</option>
+                      </select>
                     </div>
 
                     <div>
-                      <label className="text-sm text-gray-700 font-medium">
-                        Notes
+                      <label className="text-sm font-semibold text-gray-700">
+                        Manufacturer
                       </label>
-                      <textarea
-                        name="notes"
-                        defaultValue={editingItem?.notes}
-                        placeholder="Additional information..."
-                        className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 h-24 focus:ring-2 focus:ring-red-700 outline-none resize-none"
+
+                      <input
+                        name="manufacturer"
+                        defaultValue={editingItem?.manufacturer}
+                        placeholder="Ex: Sky-Watcher"
+                        className="w-full mt-1 border border-gray-200 bg-gray-50 rounded-xl p-3"
                       />
                     </div>
                   </div>
 
-                  <div className="flex justify-end gap-3 p-6 border-t bg-gray-50 rounded-b-2xl">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-semibold text-gray-700">
+                        Acquisition date
+                      </label>
+
+                      <input
+                        name="acquisitionDate"
+                        type="date"
+                        defaultValue={
+                          editingItem?.acquisitionDate
+                            ? new Date(editingItem.acquisitionDate)
+                                .toISOString()
+                                .split("T")[0]
+                            : ""
+                        }
+                        className="w-full mt-1 border border-gray-200 bg-gray-50 rounded-xl p-3"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-gray-700">
+                        Status
+                      </label>
+
+                      <select
+                        name="status"
+                        defaultValue={editingItem?.status || "ACTIVE"}
+                        className="w-full mt-1 border border-gray-200 bg-gray-50 rounded-xl p-3"
+                      >
+                        <option value="ACTIVE">Active</option>
+                        <option value="REPAIR">Repair in progress</option>
+                        <option value="FOR_SALE">For sale</option>
+                        <option value="DAMAGED">Damaged</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+                    <div>
+                      <label className="text-sm font-semibold text-gray-700">
+                        Diameter / Sensor
+                      </label>
+
+                      <input
+                        name="diameterSensor"
+                        defaultValue={editingItem?.diameterSensor}
+                        placeholder="Ex: 200mm / APS-C"
+                        className="w-full mt-1 border border-gray-200 bg-gray-50 rounded-xl p-3"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-gray-700">
+                        Focal length / Resolution
+                      </label>
+
+                      <input
+                        name="focalResolution"
+                        defaultValue={editingItem?.focalResolution}
+                        placeholder="Ex: 1000mm / 26MP"
+                        className="w-full mt-1 border border-gray-200 bg-gray-50 rounded-xl p-3"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-gray-700">
+                        F/D Ratio
+                      </label>
+
+                      <input
+                        name="fdRatio"
+                        defaultValue={editingItem?.fdRatio}
+                        placeholder="Ex: f/5"
+                        className="w-full mt-1 border border-gray-200 bg-gray-50 rounded-xl p-3"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-gray-700">
+                        Other
+                      </label>
+
+                      <input
+                        name="otherSpec"
+                        defaultValue={editingItem?.otherSpec}
+                        placeholder="Optional"
+                        className="w-full mt-1 border border-gray-200 bg-gray-50 rounded-xl p-3"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700">
+                      Notes
+                    </label>
+
+                    <textarea
+                      name="notes"
+                      defaultValue={editingItem?.notes}
+                      placeholder="Additional information..."
+                      className="w-full mt-1 border border-gray-200 bg-gray-50 rounded-xl p-4 h-28 resize-none"
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-4 border-t">
                     <button
                       type="button"
                       onClick={() => {
                         setShowAddModal(false);
                         setEditingItem(null);
                       }}
-                      className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                      className="px-5 py-2 text-gray-500 hover:text-gray-700 cursor-pointer"
                     >
                       Cancel
                     </button>
+
                     <button
                       type="submit"
-                      className="px-6 py-2 bg-red-700 text-white rounded-lg font-medium hover:bg-red-700 shadow-md transition-all active:scale-95 cursor-pointer"
+                      className="px-6 py-3 bg-red-700 text-white rounded-xl font-semibold hover:bg-red-800 cursor-pointer"
                     >
-                      {editingItem ? "Save changes" : "Add equipment"}
+                      {editingItem ? "Update" : "Create equipment"}
                     </button>
                   </div>
                 </form>
