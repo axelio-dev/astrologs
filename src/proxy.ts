@@ -10,7 +10,6 @@ export async function proxy(request: NextRequest) {
   const isAuthPage = pathname.startsWith("/auth");
   const isDashboardPage = pathname.startsWith("/dashboard");
 
-  // Pas connecté → dashboard interdit
   if (isDashboardPage && !sessionCookie) {
     const loginUrl = new URL("/auth/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
