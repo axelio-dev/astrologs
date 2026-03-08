@@ -1,16 +1,23 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
   const sessionCookie =
-    request.cookies.get("better-auth.session_token") ||
-    request.cookies.get("__secure_better-auth.session_token");
+    request.cookies.get("better-auth.session_token")?.value ||
+    request.cookies.get("__Secure-better-auth.session_token")?.value;
 
-  const isAuthPage = request.nextUrl.pathname.startsWith("/auth");
-  const isDashboardPage = request.nextUrl.pathname.startsWith("/dashboard");
+  const isAuthPage = pathname.startsWith("/auth");
+  const isDashboardPage = pathname.startsWith("/dashboard");
 
+  // Pas connecté → dashboard interdit
   if (isDashboardPage && !sessionCookie) {
-    return NextResponse.redirect(new URL("/auth/login", request.url));
+    const loginUrl = new URL("/auth/login", request.url);
+    loginUrl.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(loginUrl);
   }
+
+  // Déjà connecté → pas besoin d'aller sur auth
   if (isAuthPage && sessionCookie) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
