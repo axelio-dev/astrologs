@@ -15,7 +15,7 @@ export async function createEquipment(formData: FormData) {
   });
 
   if (!session || !session.user) {
-    throw new Error("Vous devez être connecté pour ajouter du matériel.");
+    throw new Error("You need to be connected to add equipments.");
   }
 
   try {
@@ -46,8 +46,8 @@ export async function createEquipment(formData: FormData) {
 
     return { success: true, data: newEquipment };
   } catch (error) {
-    console.error("Erreur Prisma:", error);
-    return { success: false, error: "Impossible de créer l'équipement." };
+    console.error("Prisma error :", error);
+    return { success: false, error: "Impossible to create the equipment." };
   }
 }
 
@@ -70,7 +70,7 @@ export async function getUserEquipments() {
 
 export async function deleteEquipment(id: string) {
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) throw new Error("Non autorisé");
+  if (!session) throw new Error("Not authorised");
 
   await prisma.equipment.delete({
     where: { id, userId: session.user.id },
@@ -81,7 +81,7 @@ export async function deleteEquipment(id: string) {
 
 export async function updateEquipment(id: string, formData: FormData) {
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) throw new Error("Non autorisé");
+  if (!session) throw new Error("Not authorised");
 
   const data = {
     name: formData.get("name") as string,

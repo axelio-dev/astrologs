@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Home,
-  Camera,
-  Share2,
-  Calendar,
-  Image as ImageIcon,
-  Package,
-} from "lucide-react";
+import { Home, Camera, Calendar, Package } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -15,9 +8,7 @@ import { usePathname } from "next/navigation";
 const menuItems = [
   { name: "Home", icon: Home, href: "/dashboard" },
   { name: "Sessions", icon: Camera, href: "/dashboard/sessions" },
-  { name: "Publications", icon: Share2, href: "/dashboard/publications" },
   { name: "Ephemeris", icon: Calendar, href: "/dashboard/ephemeris" },
-  { name: "Gallery", icon: ImageIcon, href: "/dashboard/gallery" },
   { name: "Equipments", icon: Package, href: "/dashboard/equipments" },
 ];
 
@@ -26,7 +17,7 @@ export default function Sidebar() {
   const { data: session } = authClient.useSession();
 
   return (
-    <aside className="w-64 border-r border-gray-200 bg-white h-[calc(100vh-81px)] flex flex-col justify-between">
+    <aside className="w-64 border-r border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 h-[calc(100vh-81px)] flex flex-col justify-between transition-colors duration-300">
       <nav className="p-4">
         <ul className="space-y-2">
           {menuItems.map((item) => {
@@ -37,15 +28,15 @@ export default function Sidebar() {
                   href={item.href}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group ${
                     isActive
-                      ? "bg-red-50 text-red-500 font-semibold"
-                      : "text-gray-600 hover:bg-gray-100"
+                      ? "bg-red-50 dark:bg-red-500/10 text-red-500 font-semibold"
+                      : "text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-900"
                   }`}
                 >
                   <item.icon
                     className={`h-5 w-5 ${
                       isActive
                         ? "text-red-500"
-                        : "text-gray-400 group-hover:text-gray-600"
+                        : "text-gray-400 group-hover:text-gray-600 dark:group-hover:text-slate-300"
                     }`}
                   />
                   <span className="text-sm">{item.name}</span>
@@ -56,12 +47,12 @@ export default function Sidebar() {
         </ul>
       </nav>
 
-      <footer className="p-4 border-t border-gray-100">
+      <footer className="p-4 border-t border-gray-100 dark:border-slate-800">
         <div className="flex flex-col gap-1 px-4 py-2">
           <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">
             Connected as
           </p>
-          <p className="text-xs font-medium text-gray-700 truncate">
+          <p className="text-xs font-medium text-gray-700 dark:text-slate-200 truncate">
             {session?.user?.email || "Loading..."}
           </p>
           <p className="text-[10px] text-gray-400 mt-2">Version : Pre-Alpha</p>

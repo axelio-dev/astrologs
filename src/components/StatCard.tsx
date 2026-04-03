@@ -16,17 +16,21 @@ export default function StatCard({
   icon: Icon,
 }: StatCardProps) {
   return (
-    <div className="relative bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
-      <div className="absolute top-6 right-6 text-blue-500">
+    <div className="relative bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm hover:shadow-md dark:hover:border-slate-700 transition-all duration-300">
+      <div className="absolute top-6 right-6 text-red-500">
         <Icon className="w-5 h-5" />
       </div>
 
-      <p className="text-sm text-gray-500">{title}</p>
+      <p className="text-sm text-gray-500 dark:text-slate-400">{title}</p>
 
-      <h2 className="mt-4 text-4xl font-semibold text-gray-900">{value}</h2>
+      <h2 className="mt-4 text-4xl font-semibold text-gray-900 dark:text-white transition-colors">
+        {value}
+      </h2>
 
       {description && (
-        <p className="mt-2 text-sm text-gray-500">{description}</p>
+        <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
+          {description}
+        </p>
       )}
     </div>
   );

@@ -1,3 +1,4 @@
+import { verifyPassword } from "better-auth/api";
 import { Exo_2, Geist, Geist_Mono } from "next/font/google";
 
 export const exo = Exo_2({

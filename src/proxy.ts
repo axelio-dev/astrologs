@@ -16,7 +16,6 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Déjà connecté → pas besoin d'aller sur auth
   if (isAuthPage && sessionCookie) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
