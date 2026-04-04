@@ -12,6 +12,7 @@ import {
   MapPin,
   Navigation,
   Eye,
+  Loader2,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
@@ -103,11 +104,15 @@ export default function Ephemeris() {
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
           );
           const data = await res.json();
-          const city = data.address.city || data.address.town || "Ma Position";
+          const city =
+            data.address.city ||
+            data.address.town ||
+            data.address.village ||
+            "Ma Position";
           setCoords({
             lat: latitude,
             lon: longitude,
-            name: `${city}, ${data.address.country_code?.toUpperCase()}`,
+            name: `${city}, ${data.address.country_code?.toUpperCase() || ""}`,
           });
         } catch (e) {
           setCoords((prev) => ({ ...prev, lat: latitude, lon: longitude }));
@@ -117,34 +122,45 @@ export default function Ephemeris() {
   }, []);
 
   useEffect(() => {
+    let isCancelled = false;
     async function fetchAstroData() {
       setLoading(true);
       try {
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,cloud_cover,wind_speed_10m,is_day&timezone=auto&forecast_days=3`;
         const response = await fetch(url);
         const data = await response.json();
+
+        if (!data || !data.hourly) {
+          throw new Error("Invalid API response: hourly data missing");
+        }
+
         const now = new Date();
         const startIndex = data.hourly.time.findIndex(
           (t: string) => new Date(t) >= now,
         );
         const start = startIndex === -1 ? 0 : startIndex;
 
-        setWeather({
-          time: data.hourly.time.slice(start, start + 48),
-          cloudCover: data.hourly.cloud_cover.slice(start, start + 48),
-          temperature: data.hourly.temperature_2m.slice(start, start + 48),
-          humidity: data.hourly.relative_humidity_2m.slice(start, start + 48),
-          dewPoint: data.hourly.dew_point_2m.slice(start, start + 48),
-          windSpeed: data.hourly.wind_speed_10m.slice(start, start + 48),
-          isDay: data.hourly.is_day.slice(start, start + 48),
-        });
+        if (!isCancelled) {
+          setWeather({
+            time: data.hourly.time.slice(start, start + 48),
+            cloudCover: data.hourly.cloud_cover.slice(start, start + 48),
+            temperature: data.hourly.temperature_2m.slice(start, start + 48),
+            humidity: data.hourly.relative_humidity_2m.slice(start, start + 48),
+            dewPoint: data.hourly.dew_point_2m.slice(start, start + 48),
+            windSpeed: data.hourly.wind_speed_10m.slice(start, start + 48),
+            isDay: data.hourly.is_day.slice(start, start + 48),
+          });
+        }
       } catch (error) {
-        console.error(error);
+        console.error("Meteo Fetch Error:", error);
       } finally {
-        setLoading(false);
+        if (!isCancelled) setLoading(false);
       }
     }
     fetchAstroData();
+    return () => {
+      isCancelled = true;
+    };
   }, [coords]);
 
   const moon = useMemo(() => {
@@ -192,8 +208,11 @@ export default function Ephemeris() {
 
   if (!mounted || isPending || loading)
     return (
-      <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center">
-        <Rocket className="text-red-500 animate-bounce w-10 h-10" />
+      <div className="min-h-screen bg-white dark:bg-slate-950 flex flex-col items-center justify-center gap-4">
+        <Rocket className="text-red-500 animate-bounce w-12 h-12" />
+        <p className="text-sm font-medium text-gray-400 animate-pulse uppercase tracking-widest">
+          Loading Sky Data...
+        </p>
       </div>
     );
 
@@ -296,7 +315,7 @@ export default function Ephemeris() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden mb-10">
               <div className="p-6 border-b border-gray-50 dark:border-slate-700">
                 <h2 className="font-semibold flex items-center gap-2">
                   <Sun className="w-5 h-5 text-red-500" /> Next 48 Hours
