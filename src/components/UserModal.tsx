@@ -62,17 +62,14 @@ export default function UserModal({ isOpen, onClose, user }: UserModalProps) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      {/* Overlay sombre */}
       <div
         className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
         onClick={onClose}
       />
-
-      {/* Contenu du Modal */}
       <div className="relative bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-800 overflow-hidden">
         <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-slate-800">
           <h2 className={`${exo.className} text-xl font-bold`}>
-            Paramètres du compte
+            Account Settings
           </h2>
           <button
             onClick={onClose}
@@ -83,11 +80,10 @@ export default function UserModal({ isOpen, onClose, user }: UserModalProps) {
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Formulaire Profil */}
           <form onSubmit={handleUpdateProfile} className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Nom d'utilisateur
+                Username
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -102,7 +98,7 @@ export default function UserModal({ isOpen, onClose, user }: UserModalProps) {
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Email (non modifiable)
+                Email (not editable)
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -120,14 +116,13 @@ export default function UserModal({ isOpen, onClose, user }: UserModalProps) {
               disabled={loading}
               className="w-full py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-colors"
             >
-              {loading && <Loader2 className="w-4 h-4 animate-spin" />} Mettre à
-              jour le profil
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />} Update Profile
             </button>
           </form>
 
           <div className="border-t border-gray-100 dark:border-slate-800 pt-6">
             <h3 className="text-sm font-bold mb-4 uppercase text-gray-400 tracking-wider">
-              Sécurité
+              Security
             </h3>
 
             <form onSubmit={handleChangePassword} className="space-y-4">
@@ -135,7 +130,7 @@ export default function UserModal({ isOpen, onClose, user }: UserModalProps) {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type={showPass ? "text" : "password"}
-                  placeholder="Mot de passe actuel"
+                  placeholder="Current password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-red-500 transition-all"
@@ -146,7 +141,7 @@ export default function UserModal({ isOpen, onClose, user }: UserModalProps) {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type={showPass ? "text" : "password"}
-                  placeholder="Nouveau mot de passe"
+                  placeholder="New password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="w-full pl-10 pr-10 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-red-500 transition-all"
@@ -165,7 +160,7 @@ export default function UserModal({ isOpen, onClose, user }: UserModalProps) {
                 disabled={loading}
                 className="w-full py-2 border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg text-sm font-bold transition-all"
               >
-                Changer le mot de passe
+                Change Password
               </button>
             </form>
           </div>

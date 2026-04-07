@@ -1,17 +1,29 @@
 "use client";
 
-import { useState } from "react";
 import { exo } from "@/app/fonts";
-import { User, Lock, Mail, Eye, EyeOff, LogIn, Telescope } from "lucide-react";
+import {
+  User,
+  Lock,
+  Mail,
+  Eye,
+  EyeOff,
+  LogIn,
+  Telescope,
+  Sun,
+  Moon,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { toast } from "sonner";
+import { useState, useEffect } from "react";
 import { signUp } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useTheme } from "next-themes";
 
 export default function Register() {
   const router = useRouter();
-
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -20,22 +32,18 @@ export default function Register() {
     "idle" | "loading" | "success" | "error"
   >("idle");
 
+  useEffect(() => setMounted(true), []);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!username || !email || !password) {
-      toast.error("Please fill in all fields");
-      return;
-    }
-
-    if (password.length < 8) {
-      toast.error("Password must be at least 8 characters long");
-      return;
-    }
-
+    if (!username || !email || !password)
+      return toast.error("Please fill in all fields");
+    if (password.length < 8)
+      return toast.error("Password must be 8+ characters");
     setStatus("loading");
 
     try {
-      const { data, error } = await signUp.email({
+      const { error } = await signUp.email({
         email,
         password,
         name: username,
@@ -43,18 +51,12 @@ export default function Register() {
       });
 
       if (error) {
-        const msg =
-          typeof error === "string"
-            ? error
-            : (error.message ?? "An error occurred");
-        toast.error(msg);
+        toast.error(error.message ?? "Registration failed");
         setStatus("error");
         return;
       }
 
-      toast.success("Account created! Welcome!");
-      setStatus("success");
-
+      toast.success("Welcome!");
       router.push("/dashboard");
       router.refresh();
     } catch (err) {
@@ -63,9 +65,18 @@ export default function Register() {
     }
   };
 
+  if (!mounted) return null;
+
   return (
-    <main className="min-h-screen flex">
-      <div className="hidden md:block w-1/2 bg-cover bg-center relative">
+    <main className="h-screen w-full flex bg-white dark:bg-slate-950 transition-colors overflow-hidden">
+      <button
+        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+        className="fixed top-5 right-5 z-50 p-3 rounded-xl bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-yellow-400 border border-slate-200 dark:border-slate-800 shadow-sm"
+      >
+        {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+      </button>
+
+      <div className="hidden lg:block lg:w-1/2 h-full relative">
         <Image
           src="/pexels-martin-marthadinata-252863-35663232.jpg"
           alt="Register background"
@@ -73,131 +84,116 @@ export default function Register() {
           className="object-cover"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-tr from-red-800 via-red-600/10 to-transparent pointer-events-none" />
-
-        <div className="absolute bottom-20 left-15">
+        <div className="absolute inset-0 bg-gradient-to-t from-red-950/90 via-transparent to-transparent" />
+        <div className="absolute bottom-12 left-12">
           <h1
-            className={`${exo.className} text-white text-5xl font-bold flex items-center`}
+            className={`${exo.className} text-white text-5xl font-bold flex items-center gap-4`}
           >
-            <Telescope className="mr-5 h-15 w-15" />
-            Astrologs
+            <Telescope size={48} /> Astrologs
           </h1>
-          <p className="text-white text-lg italic mt-4">
-            Astrologs — where the cosmos meets data.
+          <p className="text-white/80 text-lg mt-2">
+            Where the cosmos meets data.
           </p>
         </div>
       </div>
 
-      <section className="w-full md:w-1/2 flex flex-col items-center justify-center p-8 bg-white">
-        <header className="mb-8 w-full max-w-md">
-          <div className="flex items-center space-x-2 mb-2">
-            <span
-              className={`w-3 h-3 rounded-full bg-red-800 ${status === "loading" ? "animate-pulse" : ""}`}
-            ></span>
-            <span className="w-3 h-3 bg-red-600 rounded-full"></span>
-            <span className="w-3 h-3 bg-red-400 rounded-full"></span>
-            <h1 className={`${exo.className} text-4xl font-bold ml-2`}>
+      <section className="w-full lg:w-1/2 h-full flex flex-col items-center justify-center p-6 sm:p-12 overflow-y-auto">
+        <div className="w-full max-w-md">
+          <header className="mb-8 text-center lg:text-left">
+            <h1
+              className={`${exo.className} text-4xl font-bold text-slate-900 dark:text-white mb-2`}
+            >
               Register
             </h1>
-          </div>
-          <h2 className="text-gray-500">Create your account</h2>
-        </header>
+            <p className="text-slate-500 dark:text-slate-400">
+              Join the community of Astrologs!
+            </p>
+          </header>
 
-        <form onSubmit={handleSubmit} className="w-full max-w-md space-y-6">
-          <div className="space-y-1">
-            <label
-              htmlFor="username"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Username
-            </label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="NebulaRider"
-                className="pl-10 w-full bg-gray-100 h-12 rounded-md focus:ring-2 focus:ring-red-500 focus:outline-none transition-all"
-              />
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">
+                Username
+              </label>
+              <div className="relative">
+                <User
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                  size={20}
+                />
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="NebulaRider"
+                  className="w-full pl-12 pr-4 h-12 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none transition-all"
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-1">
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="ludovic.crochet@ptarmigan.xyz"
-                className="pl-10 w-full bg-gray-100 h-12 rounded-md focus:ring-2 focus:ring-red-500 focus:outline-none transition-all"
-              />
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">
+                Email
+              </label>
+              <div className="relative">
+                <Mail
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                  size={20}
+                />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="astro@example.com"
+                  className="w-full pl-12 pr-4 h-12 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none transition-all"
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-1">
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Password
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Andromeda@42"
-                className="w-full h-12 rounded-md pl-10 pr-10 bg-gray-100 focus:ring-2 focus:ring-red-500 focus:outline-none transition-all"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">
+                Password
+              </label>
+              <div className="relative">
+                <Lock
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                  size={20}
+                />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-12 pr-12 h-12 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
             </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={status === "loading"}
-            className={`bg-red-500 text-white w-full h-12 rounded-md flex items-center justify-center space-x-2 font-bold transform hover:scale-[1.02] transition-all duration-300 shadow-lg ${
-              status === "loading" ? "opacity-70 cursor-wait" : "cursor-pointer"
-            }`}
-          >
-            {status === "loading" ? (
-              "Creating account..."
-            ) : (
-              <>
-                <span>Sign Up</span>
-                <LogIn size={20} />
-              </>
-            )}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={status === "loading"}
+              className="w-full h-12 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold shadow-lg shadow-red-600/20 active:scale-95 transition-all disabled:opacity-50 mt-2"
+            >
+              {status === "loading" ? "Creating Account..." : "Sign Up"}
+            </button>
+          </form>
 
-        <footer className="mt-7.5 flex items-center space-x-2">
-          <p className="text-gray-500 text-sm">Already have an account?</p>
-          <Link
-            href="/auth/login"
-            className="text-red-500 font-bold hover:underline"
-          >
-            Log in
-          </Link>
-        </footer>
+          <footer className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
+            Already have an account?{" "}
+            <Link
+              href="/auth/login"
+              className="text-red-600 font-bold hover:underline ml-1"
+            >
+              Log in
+            </Link>
+          </footer>
+        </div>
       </section>
     </main>
   );

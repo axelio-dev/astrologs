@@ -11,8 +11,10 @@ import {
   Box,
   Settings,
   AlertCircle,
-  Binoculars,
   Filter,
+  Calendar,
+  Clipboard,
+  Activity,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
@@ -26,13 +28,30 @@ import {
   updateEquipment,
 } from "@/lib/actions/equipment";
 
+type EquipmentCategory = "TELESCOPE" | "CAMERA" | "MOUNT" | "FILTER";
+type EquipmentStatus = "ACTIVE" | "REPAIR" | "DAMAGED";
+
+interface Equipment {
+  id: string;
+  name: string;
+  category: EquipmentCategory;
+  status: EquipmentStatus;
+  manufacturer?: string;
+  acquisitionDate?: string | Date;
+  diameterSensor?: string;
+  focalResolution?: string;
+  fdRatio?: string;
+  otherSpec?: string;
+  notes?: string;
+}
+
 export default function Equipments() {
-  const { data: session, isPending: sessionPending } = authClient.useSession();
+  const { data: session } = authClient.useSession();
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
-  const [equipments, setEquipments] = useState<any[]>([]);
+  const [equipments, setEquipments] = useState<Equipment[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [editingItem, setEditingItem] = useState<any>(null);
+  const [editingItem, setEditingItem] = useState<Equipment | null>(null);
   const [activeTab, setActiveTab] = useState("ALL");
 
   useEffect(() => {
@@ -43,7 +62,7 @@ export default function Equipments() {
     setLoading(true);
     try {
       const data = await getUserEquipments();
-      setEquipments(data);
+      setEquipments(data as Equipment[]);
     } finally {
       setLoading(false);
     }
@@ -60,7 +79,7 @@ export default function Equipments() {
       maintenance: equipments.filter((e) =>
         ["REPAIR", "DAMAGED"].includes(e.status),
       ).length,
-      totalSessions: 102,
+      categories: new Set(equipments.map((e) => e.category)).size,
     };
   }, [equipments]);
 
@@ -70,7 +89,7 @@ export default function Equipments() {
   }, [equipments, activeTab]);
 
   const handleDelete = async (id: string) => {
-    if (confirm("Voulez-vous vraiment supprimer cet équipement ?")) {
+    if (confirm("Do you really want to delete this equipment?")) {
       await deleteEquipment(id);
       fetchEquipments();
     }
@@ -95,10 +114,7 @@ export default function Equipments() {
 
   return (
     <div className="flex flex-col h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
-      <Navbar />
-
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
         <main className="flex-1 overflow-y-auto p-8 bg-gray-50/30 dark:bg-slate-900/20">
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
@@ -107,7 +123,8 @@ export default function Equipments() {
                   Equipments
                 </h1>
                 <p className="text-gray-500 dark:text-slate-400 mt-2 text-lg">
-                  Manage your astronomical equipments
+                  Manage your astronomical inventory and technical
+                  specifications
                 </p>
               </div>
 
@@ -125,19 +142,19 @@ export default function Equipments() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
               <StatCard
-                title="Total"
+                title="Total items"
                 value={stats.total}
                 icon={<Box className="text-red-500 opacity-40" size={32} />}
               />
               <StatCard
-                title="Actifs"
+                title="Operational"
                 value={stats.active}
                 icon={
                   <Settings className="text-green-500 opacity-40" size={32} />
                 }
               />
               <StatCard
-                title="Maintenance"
+                title="Issues/Repair"
                 value={stats.maintenance}
                 icon={
                   <AlertCircle
@@ -148,51 +165,40 @@ export default function Equipments() {
                 color="text-orange-500"
               />
               <StatCard
-                title="Sessions"
-                value={stats.totalSessions}
-                icon={
-                  <Telescope className="text-blue-500 opacity-40" size={32} />
-                }
+                title="Categories"
+                value={stats.categories}
+                icon={<Filter className="text-blue-500 opacity-40" size={32} />}
               />
             </div>
 
             <div className="flex flex-wrap gap-2 mb-8">
-              <TabButton
-                active={activeTab === "ALL"}
-                onClick={() => setActiveTab("ALL")}
-                label="All"
-                icon={<Box size={18} />}
-              />
-              <TabButton
-                active={activeTab === "TELESCOPE"}
-                onClick={() => setActiveTab("TELESCOPE")}
-                label="Telescopes"
-                icon={<Telescope size={18} />}
-              />
-              <TabButton
-                active={activeTab === "CAMERA"}
-                onClick={() => setActiveTab("CAMERA")}
-                label="Cameras"
-                icon={<Camera size={18} />}
-              />
-              <TabButton
-                active={activeTab === "MOUNT"}
-                onClick={() => setActiveTab("MOUNT")}
-                label="Mounts"
-                icon={<Settings size={18} />}
-              />
-              <TabButton
-                active={activeTab === "FILTER"}
-                onClick={() => setActiveTab("FILTER")}
-                label="Filters"
-                icon={<Filter size={18} />}
-              />
+              {["ALL", "TELESCOPE", "CAMERA", "MOUNT", "FILTER"].map((cat) => (
+                <TabButton
+                  key={cat}
+                  active={activeTab === cat}
+                  onClick={() => setActiveTab(cat)}
+                  label={
+                    cat === "ALL"
+                      ? "All"
+                      : cat.charAt(0) + cat.slice(1).toLowerCase() + "s"
+                  }
+                  icon={
+                    cat === "CAMERA" ? (
+                      <Camera size={18} />
+                    ) : cat === "TELESCOPE" ? (
+                      <Telescope size={18} />
+                    ) : (
+                      <Box size={18} />
+                    )
+                  }
+                />
+              ))}
             </div>
 
             {loading ? (
               <div className="flex flex-col items-center justify-center py-20 text-gray-400">
                 <Settings className="animate-spin mb-4" size={40} />
-                <p>Loading equipments...</p>
+                <p>Loading your gear...</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-10">
@@ -212,8 +218,8 @@ export default function Equipments() {
           </div>
 
           {showAddModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-              <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-gray-100 dark:border-slate-700">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
+              <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-3xl shadow-2xl flex flex-col my-auto border border-gray-100 dark:border-slate-700 text-slate-900 dark:text-white">
                 <div className="p-6 border-b dark:border-slate-700 flex justify-between items-center">
                   <h2 className="text-xl font-bold flex items-center gap-2">
                     {editingItem ? (
@@ -221,76 +227,172 @@ export default function Equipments() {
                     ) : (
                       <Plus size={20} className="text-red-500" />
                     )}
-                    {editingItem
-                      ? "Modifier l'équipement"
-                      : "Ajouter un équipement"}
+                    {editingItem ? "Edit Equipment" : "Add New Equipment"}
                   </h2>
                   <button
                     onClick={() => setShowAddModal(false)}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors"
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-white"
                   >
                     <X size={24} />
                   </button>
                 </div>
 
-                <form action={handleSubmit} className="p-8 space-y-6">
-                  <div className="space-y-4">
-                    <div>
+                <form action={handleSubmit} className="p-8 space-y-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="md:col-span-2">
                       <label className="text-sm font-semibold text-gray-700 dark:text-slate-300">
-                        Nom du matériel *
+                        Equipment Name *
                       </label>
                       <input
                         name="name"
                         required
                         defaultValue={editingItem?.name}
-                        className="w-full mt-1 border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600 transition-all"
+                        className="form-input-custom"
+                        placeholder="e.g. Sky-Watcher 80ED"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+
+                    <div>
+                      <label className="text-sm font-semibold text-gray-700 dark:text-slate-300">
+                        Category
+                      </label>
+                      <select
+                        name="category"
+                        defaultValue={editingItem?.category}
+                        className="form-input-custom"
+                      >
+                        <option value="TELESCOPE">Telescope</option>
+                        <option value="CAMERA">Camera</option>
+                        <option value="MOUNT">Mount</option>
+                        <option value="FILTER">Filter</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-gray-700 dark:text-slate-300">
+                        Status
+                      </label>
+                      <select
+                        name="status"
+                        defaultValue={editingItem?.status || "ACTIVE"}
+                        className="form-input-custom"
+                      >
+                        <option value="ACTIVE">Active</option>
+                        <option value="REPAIR">In Maintenance</option>
+                        <option value="DAMAGED">Damaged</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-gray-700 dark:text-slate-300">
+                        Manufacturer
+                      </label>
+                      <input
+                        name="manufacturer"
+                        defaultValue={editingItem?.manufacturer || ""}
+                        className="form-input-custom"
+                        placeholder="ZWO, Celestron..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-gray-700 dark:text-slate-300">
+                        Acquisition Date
+                      </label>
+                      <input
+                        type="date"
+                        name="acquisitionDate"
+                        defaultValue={
+                          editingItem?.acquisitionDate
+                            ? new Date(editingItem.acquisitionDate)
+                                .toISOString()
+                                .split("T")[0]
+                            : ""
+                        }
+                        className="form-input-custom"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t dark:border-slate-700">
+                    <p className="text-xs font-bold uppercase text-red-500 mb-4 tracking-widest">
+                      Technical Specifications
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
-                        <label className="text-sm font-semibold text-gray-700 dark:text-slate-300">
-                          Catégorie
+                        <label className="text-xs font-semibold text-gray-500">
+                          Diameter / Sensor
                         </label>
-                        <select
-                          name="category"
-                          defaultValue={editingItem?.category}
-                          className="w-full mt-1 border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 rounded-xl p-3 outline-none"
-                        >
-                          <option value="TELESCOPE">Télescope</option>
-                          <option value="CAMERA">Caméra</option>
-                          <option value="MOUNT">Monture</option>
-                          <option value="FILTER">Filtre</option>
-                        </select>
+                        <input
+                          name="diameterSensor"
+                          defaultValue={editingItem?.diameterSensor || ""}
+                          className="form-input-custom"
+                          placeholder="80mm / IMX571"
+                        />
                       </div>
                       <div>
-                        <label className="text-sm font-semibold text-gray-700 dark:text-slate-300">
-                          Statut
+                        <label className="text-xs font-semibold text-gray-500">
+                          Focal / Resolution
                         </label>
-                        <select
-                          name="status"
-                          defaultValue={editingItem?.status || "ACTIVE"}
-                          className="w-full mt-1 border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 rounded-xl p-3 outline-none"
-                        >
-                          <option value="ACTIVE">Actif</option>
-                          <option value="REPAIR">Maintenance</option>
-                        </select>
+                        <input
+                          name="focalResolution"
+                          defaultValue={editingItem?.focalResolution || ""}
+                          className="form-input-custom"
+                          placeholder="600mm"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-gray-500">
+                          F/D Ratio
+                        </label>
+                        <input
+                          name="fdRatio"
+                          defaultValue={editingItem?.fdRatio || ""}
+                          className="form-input-custom"
+                          placeholder="f/7.5"
+                        />
                       </div>
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 dark:text-slate-300">
+                      Other Specs
+                    </label>
+                    <input
+                      name="otherSpec"
+                      defaultValue={editingItem?.otherSpec || ""}
+                      className="form-input-custom"
+                      placeholder="Weight, Backfocus, etc."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 dark:text-slate-300">
+                      Private Notes
+                    </label>
+                    <textarea
+                      name="notes"
+                      defaultValue={editingItem?.notes || ""}
+                      rows={2}
+                      className="form-input-custom resize-none"
+                      placeholder="Bought second-hand, needs cleaning..."
+                    />
                   </div>
 
                   <div className="flex justify-end gap-3 pt-6 border-t dark:border-slate-700">
                     <button
                       type="button"
                       onClick={() => setShowAddModal(false)}
-                      className="px-6 py-3 text-gray-500 dark:text-slate-400 font-medium"
+                      className="px-6 py-3 text-gray-500 font-medium"
                     >
-                      Annuler
+                      Cancel
                     </button>
                     <button
                       type="submit"
-                      className="px-8 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 shadow-lg shadow-red-600/20"
+                      className="px-8 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 shadow-lg transition-transform active:scale-95"
                     >
-                      {editingItem ? "Mettre à jour" : "Enregistrer"}
+                      {editingItem ? "Update Equipment" : "Save Equipment"}
                     </button>
                   </div>
                 </form>
@@ -299,6 +401,29 @@ export default function Equipments() {
           )}
         </main>
       </div>
+
+      <style jsx global>{`
+        .form-input-custom {
+          width: 100%;
+          margin-top: 4px;
+          border: 1px solid #e2e8f0;
+          background-color: #f8fafc;
+          border-radius: 12px;
+          padding: 12px;
+          outline: none;
+          transition: all 0.2s;
+        }
+        .dark .form-input-custom {
+          border-color: #334155;
+          background-color: #0f172a;
+          color: white;
+        }
+        .form-input-custom:focus {
+          ring: 2px;
+          ring-color: #dc2626;
+          border-color: #dc2626;
+        }
+      `}</style>
     </div>
   );
 }
@@ -308,9 +433,9 @@ function StatCard({
   value,
   icon,
   color = "text-gray-900 dark:text-white",
-}) {
+}: any) {
   return (
-    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm flex justify-between items-center transition-colors">
+    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm flex justify-between items-center">
       <div>
         <p className="text-sm font-medium text-gray-500 dark:text-slate-400 mb-1">
           {title}
@@ -322,7 +447,7 @@ function StatCard({
   );
 }
 
-function TabButton({ label, active, onClick, icon }) {
+function TabButton({ label, active, onClick, icon }: any) {
   return (
     <button
       onClick={onClick}
@@ -338,81 +463,100 @@ function TabButton({ label, active, onClick, icon }) {
   );
 }
 
-function EquipmentCard({ item, onEdit, onDelete }) {
+function EquipmentCard({
+  item,
+  onEdit,
+  onDelete,
+}: {
+  item: Equipment;
+  onEdit: (item: Equipment) => void;
+  onDelete: (id: string) => void;
+}) {
   return (
     <div className="bg-white dark:bg-slate-800 rounded-3xl border border-gray-100 dark:border-slate-700 shadow-sm p-6 relative group transition-all hover:shadow-md">
       <div className="flex justify-between items-start mb-6">
         <div className="flex gap-4">
           <div className="w-14 h-14 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center justify-center shrink-0 border border-red-100 dark:border-red-900/30">
             {item.category === "TELESCOPE" ? (
-              <Telescope className="text-red-600 dark:text-red-500" size={28} />
+              <Telescope className="text-red-600" size={28} />
+            ) : item.category === "CAMERA" ? (
+              <Camera className="text-red-600" size={28} />
             ) : (
-              <Camera className="text-red-600 dark:text-red-500" size={28} />
+              <Box className="text-red-600" size={28} />
             )}
           </div>
           <div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-              {item.name}
-            </h3>
+            <h3 className="text-xl font-bold dark:text-white">{item.name}</h3>
             <p className="text-gray-400 dark:text-slate-500 font-medium">
-              {item.manufacturer || "Astro Equipment"}
+              {item.manufacturer || "Generic Manufacturer"}
             </p>
           </div>
         </div>
         <div className="flex gap-1">
           <button
             onClick={() => onEdit(item)}
-            className="p-2.5 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
           >
             <Edit2 size={18} />
           </button>
           <button
             onClick={() => onDelete(item.id)}
-            className="p-2.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+            className="p-2 text-gray-400 hover:text-red-600 transition-colors"
           >
             <Trash2 size={18} />
           </button>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <span className="text-gray-400 dark:text-slate-500 text-sm font-medium">
-            Statut
+      <div className="space-y-3">
+        <div className="flex justify-between items-center text-sm">
+          <span className="text-gray-400 flex items-center gap-1">
+            <Activity size={14} /> Status
           </span>
           <span
-            className={`px-3 py-1 rounded-full text-xs font-bold ${item.status === "ACTIVE" ? "bg-green-50 dark:bg-green-900/20 text-green-600" : "bg-orange-50 dark:bg-orange-900/20 text-orange-600"}`}
+            className={`px-3 py-1 rounded-full text-xs font-bold ${item.status === "ACTIVE" ? "bg-green-500/10 text-green-500" : "bg-orange-500/10 text-orange-500"}`}
           >
-            {item.status === "ACTIVE" ? "Actif" : "Maintenance"}
+            {item.status}
           </span>
         </div>
 
-        <div className="flex justify-between items-center">
-          <span className="text-gray-400 dark:text-slate-500 text-sm font-medium">
-            Sessions used
-          </span>
-          <span className="text-gray-900 dark:text-white font-bold">12</span>
+        {item.acquisitionDate && (
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-gray-400 flex items-center gap-1">
+              <Calendar size={14} /> Acquired
+            </span>
+            <span className="dark:text-slate-300 font-medium">
+              {new Date(item.acquisitionDate).toLocaleDateString()}
+            </span>
+          </div>
+        )}
+
+        <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-gray-50 dark:border-slate-700">
+          <SpecItem label="Diam/Sens" value={item.diameterSensor} />
+          <SpecItem label="Focal" value={item.focalResolution} />
+          <SpecItem label="Ratio" value={item.fdRatio} />
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-gray-50 dark:border-slate-700">
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-slate-500 font-bold mb-1">
-              Diameter
-            </p>
-            <p className="font-bold text-gray-800 dark:text-slate-200">
-              {item.diameterSensor || "80mm"}
-            </p>
+        {item.notes && (
+          <div className="mt-3 p-3 bg-gray-50 dark:bg-slate-900/50 rounded-xl text-xs text-gray-500 dark:text-slate-400 italic flex gap-2">
+            <Clipboard size={14} className="shrink-0" />
+            <span className="line-clamp-2">{item.notes}</span>
           </div>
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-slate-500 font-bold mb-1">
-              Focal
-            </p>
-            <p className="font-bold text-gray-800 dark:text-slate-200">
-              {item.focalResolution || "480mm"}
-            </p>
-          </div>
-        </div>
+        )}
       </div>
+    </div>
+  );
+}
+
+function SpecItem({ label, value }: { label: string; value?: string }) {
+  return (
+    <div>
+      <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-0.5">
+        {label}
+      </p>
+      <p className="text-xs font-bold dark:text-slate-200 truncate">
+        {value || "—"}
+      </p>
     </div>
   );
 }

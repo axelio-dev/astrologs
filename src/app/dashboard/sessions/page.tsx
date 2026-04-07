@@ -13,6 +13,8 @@ import {
   Pencil,
   Trash2,
   X,
+  Settings,
+  Layers,
 } from "lucide-react";
 
 import Navbar from "@/components/Navbar";
@@ -53,6 +55,7 @@ export default function SessionsPage() {
   const [showFiltersModal, setShowFiltersModal] = useState(false);
 
   function parseDuration(duration: string) {
+    if (!duration) return 0;
     const match = duration.match(
       /(?:(\d+)h)?\s*(?:(\d+)m|min)?\s*(?:(\d+)s)?/i,
     );
@@ -84,8 +87,8 @@ export default function SessionsPage() {
   const getEquipName = (id: string) =>
     equipments.find((e) => e.id === id)?.name || "Not specified";
 
-  const getFilterNames = (ids: string[]) => {
-    if (!ids?.length) return "No filter";
+  const getMultipleEquipNames = (ids: string[]) => {
+    if (!ids?.length) return "None";
     return ids.map((id) => getEquipName(id)).join(", ");
   };
 
@@ -153,7 +156,7 @@ export default function SessionsPage() {
         matchesStatus
       );
     });
-  }, [sessions, searchQuery, filters]);
+  }, [sessions, searchQuery, filters, equipments]);
 
   const stats = useMemo(() => {
     const totalFrames = sessions.reduce(
@@ -162,15 +165,7 @@ export default function SessionsPage() {
     );
     let totalSeconds = 0;
     sessions.forEach((s) => {
-      if (!s.totalDuration) return;
-      const match = s.totalDuration.match(
-        /(?:(\d+)h)?\s*(?:(\d+)m|min)?\s*(?:(\d+)s)?/i,
-      );
-      if (!match) return;
-      totalSeconds +=
-        parseInt(match[1] || "0") * 3600 +
-        parseInt(match[2] || "0") * 60 +
-        parseInt(match[3] || "0");
+      totalSeconds += parseDuration(s.totalDuration || "");
     });
     const inProcessing = sessions.filter(
       (s) => s.status === "PROCESSING",
@@ -232,11 +227,7 @@ export default function SessionsPage() {
 
   return (
     <div className="flex flex-col h-screen bg-white dark:bg-slate-950 transition-colors">
-      <Navbar />
-
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
-
         <main className="flex-1 overflow-y-auto bg-[#F8FAFC] dark:bg-slate-900 p-10 transition-colors">
           <div className="max-w-6xl mx-auto">
             <div className="flex justify-between items-start mb-8">
@@ -369,23 +360,32 @@ export default function SessionsPage() {
                     <div className="flex flex-wrap gap-6 text-sm text-gray-500 dark:text-slate-400 mb-6">
                       <div className="flex items-center gap-2">
                         <Calendar size={16} />{" "}
-                        {new Date(s.date).toLocaleDateString("fr-FR")}
+                        {new Date(s.date).toLocaleDateString("en-US")}
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock size={16} /> {formatDuration(s.totalDuration)}
                       </div>
                       <div className="flex items-center gap-2">
-                        <Target size={16} /> {s.frameCount} frames
+                        <Target size={16} /> {s.frameCount} frames{" "}
+                        {s.exposureTime ? `(${s.exposureTime}s)` : ""}
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4 border-t border-gray-100 dark:border-slate-700">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 pt-4 border-t border-gray-100 dark:border-slate-700">
                       <div>
                         <p className="text-xs text-gray-400 dark:text-slate-500 uppercase">
                           Telescope
                         </p>
                         <p className="font-semibold dark:text-slate-200">
                           {getEquipName(s.telescopeId)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-400 dark:text-slate-500 uppercase">
+                          Mount
+                        </p>
+                        <p className="font-semibold dark:text-slate-200">
+                          {getEquipName(s.mountId)}
                         </p>
                       </div>
                       <div>
@@ -400,8 +400,8 @@ export default function SessionsPage() {
                         <p className="text-xs text-gray-400 dark:text-slate-500 uppercase">
                           Filters
                         </p>
-                        <p className="font-semibold dark:text-slate-200">
-                          {getFilterNames(s.filterIds)}
+                        <p className="font-semibold dark:text-slate-200 truncate">
+                          {getMultipleEquipNames(s.filterIds)}
                         </p>
                       </div>
                     </div>
@@ -489,78 +489,154 @@ export default function SessionsPage() {
                 </div>
               ) : (
                 <form action={handleSubmit} className="space-y-5">
-                  <div>
-                    <label className="text-sm font-semibold dark:text-slate-300">
-                      Astronomical target *
-                    </label>
-                    <input
-                      name="target"
-                      required
-                      defaultValue={editingSession?.target}
-                      className="w-full mt-1 border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-5">
+                      <div>
+                        <label className="text-sm font-semibold dark:text-slate-300">
+                          Astronomical target *
+                        </label>
+                        <input
+                          name="target"
+                          required
+                          defaultValue={editingSession?.target}
+                          className="w-full mt-1 border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-sm font-semibold dark:text-slate-300">
+                            Date *
+                          </label>
+                          <input
+                            type="date"
+                            name="date"
+                            required
+                            defaultValue={
+                              editingSession
+                                ? new Date(editingSession.date)
+                                    .toISOString()
+                                    .split("T")[0]
+                                : new Date().toISOString().split("T")[0]
+                            }
+                            className="w-full mt-1 border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl p-3"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-semibold dark:text-slate-300">
+                            Status
+                          </label>
+                          <select
+                            name="status"
+                            defaultValue={
+                              editingSession?.status || "IN_PROGRESS"
+                            }
+                            className="w-full mt-1 border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl p-3"
+                          >
+                            <option value="IN_PROGRESS">In progress</option>
+                            <option value="PROCESSING">Processing</option>
+                            <option value="COMPLETED">Completed</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-sm font-semibold dark:text-slate-300">
+                            Frame Count
+                          </label>
+                          <input
+                            type="number"
+                            name="frameCount"
+                            defaultValue={editingSession?.frameCount || 0}
+                            className="w-full mt-1 border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl p-3"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-semibold dark:text-slate-300">
+                            Exposure Time (s)
+                          </label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            name="exposureTime"
+                            defaultValue={editingSession?.exposureTime}
+                            className="w-full mt-1 border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl p-3"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-5">
+                      <div>
+                        <label className="text-sm font-semibold dark:text-slate-300">
+                          Total Duration
+                        </label>
+                        <input
+                          name="totalDuration"
+                          defaultValue={editingSession?.totalDuration}
+                          placeholder="Ex: 3h 30min"
+                          className="w-full mt-1 border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl p-3"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-semibold dark:text-slate-300">
+                          Filters used
+                        </label>
+                        <select
+                          name="filterIds"
+                          multiple
+                          defaultValue={editingSession?.filterIds || []}
+                          className="w-full mt-1 border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl p-3 min-h-[115px]"
+                        >
+                          {equipments
+                            .filter((e) => e.category === "FILTER")
+                            .map((e) => (
+                              <option key={e.id} value={e.id}>
+                                {e.name}
+                              </option>
+                            ))}
+                        </select>
+                        <p className="text-[10px] text-gray-400 mt-1 italic">
+                          Hold Ctrl/Cmd to select multiple
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
                     <div>
                       <label className="text-sm font-semibold dark:text-slate-300">
-                        Date *
-                      </label>
-                      <input
-                        type="date"
-                        name="date"
-                        required
-                        defaultValue={
-                          editingSession
-                            ? new Date(editingSession.date)
-                                .toISOString()
-                                .split("T")[0]
-                            : new Date().toISOString().split("T")[0]
-                        }
-                        className="w-full mt-1 border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl p-3"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-semibold dark:text-slate-300">
-                        Duration *
-                      </label>
-                      <input
-                        name="totalDuration"
-                        required
-                        defaultValue={editingSession?.totalDuration}
-                        placeholder="Ex: 3h 30min"
-                        className="w-full mt-1 border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl p-3"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-semibold dark:text-slate-300">
-                        Status
-                      </label>
-                      <select
-                        name="status"
-                        defaultValue={editingSession?.status || "IN_PROGRESS"}
-                        className="w-full mt-1 border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl p-3"
-                      >
-                        <option value="IN_PROGRESS">In progress</option>
-                        <option value="PROCESSING">Processing</option>
-                        <option value="COMPLETED">Completed</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-semibold dark:text-slate-300">
-                        Telescope *
+                        Telescope
                       </label>
                       <select
                         name="telescopeId"
                         defaultValue={editingSession?.telescopeId || ""}
                         className="w-full mt-1 border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl p-3"
                       >
-                        <option value="">Select a telescope</option>
+                        <option value="">None</option>
                         {equipments
                           .filter((e) => e.category === "TELESCOPE")
+                          .map((e) => (
+                            <option key={e.id} value={e.id}>
+                              {e.name}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-sm font-semibold dark:text-slate-300">
+                        Mount
+                      </label>
+                      <select
+                        name="mountId"
+                        defaultValue={editingSession?.mountId || ""}
+                        className="w-full mt-1 border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl p-3"
+                      >
+                        <option value="">None</option>
+                        {equipments
+                          .filter((e) => e.category === "MOUNT")
                           .map((e) => (
                             <option key={e.id} value={e.id}>
                               {e.name}
@@ -577,7 +653,7 @@ export default function SessionsPage() {
                         defaultValue={editingSession?.cameraId || ""}
                         className="w-full mt-1 border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl p-3"
                       >
-                        <option value="">Select a camera</option>
+                        <option value="">None</option>
                         {equipments
                           .filter((e) => e.category === "CAMERA")
                           .map((e) => (
@@ -587,6 +663,26 @@ export default function SessionsPage() {
                           ))}
                       </select>
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-semibold dark:text-slate-300">
+                      Accessories
+                    </label>
+                    <select
+                      name="accessoryIds"
+                      multiple
+                      defaultValue={editingSession?.accessoryIds || []}
+                      className="w-full mt-1 border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl p-3 h-20"
+                    >
+                      {equipments
+                        .filter((e) => e.category === "ACCESSORY")
+                        .map((e) => (
+                          <option key={e.id} value={e.id}>
+                            {e.name}
+                          </option>
+                        ))}
+                    </select>
                   </div>
 
                   <div>

@@ -6,7 +6,6 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { SessionStatus } from "../../../generated/prisma/client";
 
-// Transforme les données du formulaire en objet compatible Prisma
 function getSessionData(formData: FormData, userId: string) {
   const telescopeId = formData.get("telescopeId") as string | null;
   const cameraId = formData.get("cameraId") as string | null;
@@ -31,7 +30,6 @@ function getSessionData(formData: FormData, userId: string) {
   };
 }
 
-// Création d'une session astro
 export async function createAstroSession(formData: FormData) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) throw new Error("Unauthorized");
@@ -50,13 +48,11 @@ export async function createAstroSession(formData: FormData) {
   }
 }
 
-// Mise à jour d'une session astro
 export async function updateAstroSession(id: string, formData: FormData) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) throw new Error("Unauthorized");
 
   try {
-    // Vérifie que la session appartient bien à l'utilisateur
     const existing = await prisma.astroSession.findUnique({ where: { id } });
     if (!existing || existing.userId !== session.user.id) {
       throw new Error("Unauthorized");
@@ -78,7 +74,6 @@ export async function updateAstroSession(id: string, formData: FormData) {
   }
 }
 
-// Récupère toutes les sessions de l'utilisateur
 export async function getUserSessions() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) return [];
@@ -89,13 +84,11 @@ export async function getUserSessions() {
   });
 }
 
-// Supprime une session astro
 export async function deleteSession(id: string) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) throw new Error("Unauthorized");
 
   try {
-    // Vérifie que la session appartient bien à l'utilisateur
     const existing = await prisma.astroSession.findUnique({ where: { id } });
     if (!existing || existing.userId !== session.user.id) {
       throw new Error("Unauthorized");

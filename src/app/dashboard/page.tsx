@@ -79,11 +79,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col h-screen bg-white dark:bg-slate-950 transition-colors duration-300">
-      <Navbar />
-
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
-
         <main className="flex-1 overflow-y-auto p-8 bg-gray-50/30 dark:bg-slate-900/20">
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-start mb-8">

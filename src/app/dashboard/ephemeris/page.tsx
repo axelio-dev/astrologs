@@ -12,10 +12,7 @@ import {
   MapPin,
   Navigation,
   Eye,
-  Loader2,
 } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import Sidebar from "@/components/Sidebar";
 import { exo } from "../../fonts";
 
 const MoonIcon = ({ phase }: { phase: string }) => {
@@ -97,37 +94,51 @@ export default function Ephemeris() {
 
   useEffect(() => {
     if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        const { latitude, longitude } = position.coords;
-        try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
-          );
-          const data = await res.json();
-          const city =
-            data.address.city ||
-            data.address.town ||
-            data.address.village ||
-            "Ma Position";
-          setCoords({
-            lat: latitude,
-            lon: longitude,
-            name: `${city}, ${data.address.country_code?.toUpperCase() || ""}`,
-          });
-        } catch (e) {
-          setCoords((prev) => ({ ...prev, lat: latitude, lon: longitude }));
-        }
-      });
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          try {
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+            );
+            const data = await res.json();
+            const city =
+              data.address.city ||
+              data.address.town ||
+              data.address.village ||
+              "My Location";
+            setCoords({
+              lat: latitude,
+              lon: longitude,
+              name: `${city}, ${data.address.country_code?.toUpperCase() || ""}`,
+            });
+          } catch (e) {
+            setCoords((prev) => ({ ...prev, lat: latitude, lon: longitude }));
+          }
+        },
+        (error) => {
+          console.warn("Geolocation denied or unavailable", error);
+        },
+      );
     }
   }, []);
 
   useEffect(() => {
     let isCancelled = false;
+
     async function fetchAstroData() {
+      if (!coords.lat || !coords.lon) return;
+
       setLoading(true);
       try {
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,cloud_cover,wind_speed_10m,is_day&timezone=auto&forecast_days=3`;
+
         const response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error(`HTTP Error: ${response.status}`);
+        }
+
         const data = await response.json();
 
         if (!data || !data.hourly) {
@@ -152,16 +163,17 @@ export default function Ephemeris() {
           });
         }
       } catch (error) {
-        console.error("Meteo Fetch Error:", error);
+        console.error("Weather Fetch Error:", error);
       } finally {
         if (!isCancelled) setLoading(false);
       }
     }
+
     fetchAstroData();
     return () => {
       isCancelled = true;
     };
-  }, [coords]);
+  }, [coords.lat, coords.lon]);
 
   const moon = useMemo(() => {
     if (!mounted) return { name: "Loading...", dark: true };
@@ -179,9 +191,9 @@ export default function Ephemeris() {
   }, [mounted]);
 
   const calculateScore = (cloud: number, humidity: number, wind: number) => {
-    const cloudScore = (100 - cloud) * 0.6;
-    const humidityScore = (100 - humidity) * 0.2;
-    const windScore = Math.max(0, (40 - wind) * 2.5) * 0.2;
+    const cloudScore = (100 - (cloud || 0)) * 0.6;
+    const humidityScore = (100 - (humidity || 0)) * 0.2;
+    const windScore = Math.max(0, (40 - (wind || 0)) * 2.5) * 0.2;
     return Math.round(cloudScore + humidityScore + windScore);
   };
 
@@ -190,7 +202,7 @@ export default function Ephemeris() {
     if (!searchCity) return;
     try {
       const res = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${searchCity}&count=1&language=fr&format=json`,
+        `https://geocoding-api.open-meteo.com/v1/search?name=${searchCity}&count=1&language=en&format=json`,
       );
       const data = await res.json();
       if (data.results?.[0]) {
@@ -218,9 +230,7 @@ export default function Ephemeris() {
 
   return (
     <div className="flex flex-col h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
-      <Navbar />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
         <main className="flex-1 overflow-y-auto p-8 bg-gray-50/30 dark:bg-slate-900/20">
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
@@ -303,10 +313,10 @@ export default function Ephemeris() {
                     Dew Point
                   </p>
                   <h3 className="text-2xl font-bold mt-1">
-                    {weather ? Math.round(weather.dewPoint[0]) : 0}°C
+                    {weather ? Math.round(weather.dewPoint[0] || 0) : 0}°C
                   </h3>
                   <p className="text-[11px] text-gray-500 mt-2">
-                    Humidity: {weather?.humidity[0]}%
+                    Humidity: {weather?.humidity?.[0] || 0}%
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center border border-blue-100 dark:border-blue-900/30">
@@ -321,6 +331,7 @@ export default function Ephemeris() {
                   <Sun className="w-5 h-5 text-red-500" /> Next 48 Hours
                 </h2>
               </div>
+
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead>
@@ -332,6 +343,7 @@ export default function Ephemeris() {
                       <th className="p-5 text-center">Obs. Score</th>
                     </tr>
                   </thead>
+
                   <tbody className="divide-y divide-gray-50 dark:divide-slate-700">
                     {weather?.time.map((t, i) => {
                       const score = calculateScore(
@@ -340,10 +352,13 @@ export default function Ephemeris() {
                         weather.windSpeed[i],
                       );
                       const isNight = weather.isDay[i] === 0;
+
                       return (
                         <tr
                           key={t}
-                          className={`hover:bg-gray-50/30 dark:hover:bg-slate-700/30 transition-colors ${isNight ? "bg-red-50/5 dark:bg-red-900/10" : ""}`}
+                          className={`hover:bg-gray-50/30 dark:hover:bg-slate-700/30 transition-colors ${
+                            isNight ? "bg-red-50/5 dark:bg-red-900/10" : ""
+                          }`}
                         >
                           <td className="p-5">
                             <div className="flex flex-col">
@@ -361,16 +376,24 @@ export default function Ephemeris() {
                               </span>
                             </div>
                           </td>
+
                           <td className="p-5">
                             <div className="flex items-center gap-3">
                               <div
-                                className={`w-1.5 h-6 rounded-full ${weather.cloudCover[i] < 20 ? "bg-green-500" : weather.cloudCover[i] < 60 ? "bg-orange-400" : "bg-red-500"}`}
+                                className={`w-1.5 h-6 rounded-full ${
+                                  weather.cloudCover[i] < 20
+                                    ? "bg-green-500"
+                                    : weather.cloudCover[i] < 60
+                                      ? "bg-orange-400"
+                                      : "bg-red-500"
+                                }`}
                               />
                               <span className="text-sm font-medium">
                                 {weather.cloudCover[i]}%
                               </span>
                             </div>
                           </td>
+
                           <td className="p-5 text-center">
                             <span className="text-sm font-bold">
                               {Math.round(weather.temperature[i])}°C
@@ -379,16 +402,24 @@ export default function Ephemeris() {
                               DP: {Math.round(weather.dewPoint[i])}°C
                             </span>
                           </td>
+
                           <td className="p-5 text-center">
                             <div className="flex items-center justify-center gap-1 text-sm text-gray-600 dark:text-slate-400">
-                              <Wind className="w-3 h-3" />{" "}
-                              {Math.round(weather.windSpeed[i])}{" "}
+                              <Wind className="w-3 h-3" />
+                              {Math.round(weather.windSpeed[i])}
                               <span className="text-[10px]">km/h</span>
                             </div>
                           </td>
+
                           <td className="p-5 text-center">
                             <span
-                              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${score > 70 ? "bg-green-50 dark:bg-green-900/20 text-green-700" : score > 40 ? "bg-orange-50 dark:bg-orange-900/20 text-orange-700" : "bg-red-50 dark:bg-red-900/20 text-red-700"}`}
+                              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                                score > 70
+                                  ? "bg-green-50 dark:bg-green-900/20 text-green-700"
+                                  : score > 40
+                                    ? "bg-orange-50 dark:bg-orange-900/20 text-orange-700"
+                                    : "bg-red-50 dark:bg-red-900/20 text-red-700"
+                              }`}
                             >
                               {score}/100
                             </span>

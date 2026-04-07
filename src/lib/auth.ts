@@ -8,6 +8,5 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: false,
   },
-  // trustedOrigins: ["https://4023.fr1.orionhost.xyz"],
   trustedOrigins: ["http://localhost:3000"],
 });

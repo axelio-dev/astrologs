@@ -1,22 +1,36 @@
-import type { Metadata } from "next";
+"use client";
+
+import { useState } from "react";
+import Navbar from "@/components/Navbar";
+import Sidebar from "@/components/Sidebar";
 import { geistSans, geistMono } from "@/app/fonts";
 import "../globals.css";
-import "../fonts";
 
-export const metadata: Metadata = {
-  title: "Astrologs | Dashboard",
-  description:
-    "Astrologs dashboard: manage your data, view your statistics and monitor your activity in real time.",
-};
-
-export default function RootLayout({
+export default function DashboardLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   return (
-    <div className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-      {children}
+    <div
+      className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col h-screen overflow-hidden bg-white dark:bg-slate-950`}
+    >
+      <Navbar
+        toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+        isSidebarOpen={isSidebarOpen}
+      />
+
+      <div className="flex flex-1 overflow-hidden relative">
+        <Sidebar
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+        />
+        <main className="flex-1 overflow-y-auto bg-gray-50/30 dark:bg-slate-900/20 transition-all duration-300">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
