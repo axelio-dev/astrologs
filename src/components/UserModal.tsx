@@ -89,6 +89,7 @@ export default function UserModal({ isOpen, onClose, user }: UserModalProps) {
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
+                  maxLength={32}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-red-500 transition-all"
@@ -104,6 +105,7 @@ export default function UserModal({ isOpen, onClose, user }: UserModalProps) {
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="email"
+                  maxLength={254}
                   value={user?.email || ""}
                   disabled
                   className="w-full pl-10 pr-4 py-2 bg-gray-100 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg text-sm text-gray-500 cursor-not-allowed"
@@ -116,7 +118,8 @@ export default function UserModal({ isOpen, onClose, user }: UserModalProps) {
               disabled={loading}
               className="w-full py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-colors"
             >
-              {loading && <Loader2 className="w-4 h-4 animate-spin" />} Update Profile
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />} Update
+              Profile
             </button>
           </form>
 
@@ -132,6 +135,7 @@ export default function UserModal({ isOpen, onClose, user }: UserModalProps) {
                   type={showPass ? "text" : "password"}
                   placeholder="Current password"
                   value={currentPassword}
+                  maxLength={128}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-red-500 transition-all"
                 />
@@ -143,6 +147,7 @@ export default function UserModal({ isOpen, onClose, user }: UserModalProps) {
                   type={showPass ? "text" : "password"}
                   placeholder="New password"
                   value={newPassword}
+                  maxLength={128}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="w-full pl-10 pr-10 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-red-500 transition-all"
                 />

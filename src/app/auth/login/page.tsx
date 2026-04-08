@@ -44,6 +44,9 @@ export default function Login() {
         callbackURL: "/dashboard",
       });
 
+      if (email.length > 254) return toast.error("Email too long");
+      if (password.length > 128)
+        return toast.error("Password too long (max 128)");
       if (error) {
         toast.error(error.message ?? "Invalid credentials");
         setStatus("error");
@@ -114,6 +117,7 @@ export default function Login() {
                 />
                 <input
                   type="email"
+                  maxLength={254}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
@@ -136,6 +140,7 @@ export default function Login() {
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
+                  maxLength={128}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   className="w-full pl-12 pr-12 h-12 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none transition-all"

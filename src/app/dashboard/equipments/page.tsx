@@ -246,6 +246,7 @@ export default function Equipments() {
                       <input
                         name="name"
                         required
+                        maxLength={254}
                         defaultValue={editingItem?.name}
                         className="form-input-custom"
                         placeholder="e.g. Sky-Watcher 80ED"
@@ -289,6 +290,7 @@ export default function Equipments() {
                       </label>
                       <input
                         name="manufacturer"
+                        maxLength={254}
                         defaultValue={editingItem?.manufacturer || ""}
                         className="form-input-custom"
                         placeholder="ZWO, Celestron..."
@@ -324,6 +326,7 @@ export default function Equipments() {
                           Diameter / Sensor
                         </label>
                         <input
+                          maxLength={254}
                           name="diameterSensor"
                           defaultValue={editingItem?.diameterSensor || ""}
                           className="form-input-custom"
@@ -335,6 +338,7 @@ export default function Equipments() {
                           Focal / Resolution
                         </label>
                         <input
+                          maxLength={254}
                           name="focalResolution"
                           defaultValue={editingItem?.focalResolution || ""}
                           className="form-input-custom"
@@ -346,6 +350,7 @@ export default function Equipments() {
                           F/D Ratio
                         </label>
                         <input
+                          maxLength={254}
                           name="fdRatio"
                           defaultValue={editingItem?.fdRatio || ""}
                           className="form-input-custom"
@@ -360,6 +365,7 @@ export default function Equipments() {
                       Other Specs
                     </label>
                     <input
+                      maxLength={254}
                       name="otherSpec"
                       defaultValue={editingItem?.otherSpec || ""}
                       className="form-input-custom"
@@ -376,6 +382,7 @@ export default function Equipments() {
                       defaultValue={editingItem?.notes || ""}
                       rows={2}
                       className="form-input-custom resize-none"
+                      maxLength={500}
                       placeholder="Bought second-hand, needs cleaning..."
                     />
                   </div>

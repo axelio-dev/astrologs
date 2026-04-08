@@ -303,6 +303,7 @@ export default function SessionsPage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  maxLength={254}
                   placeholder="Search for a session..."
                   className="w-full pl-12 pr-4 py-3 bg-[#F1F5F9] dark:bg-slate-800 dark:text-white rounded-xl focus:ring-2 focus:ring-red-500 outline-none border-none"
                 />
@@ -497,6 +498,7 @@ export default function SessionsPage() {
                         </label>
                         <input
                           name="target"
+                          maxLength={254}
                           required
                           defaultValue={editingSession?.target}
                           className="w-full mt-1 border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600"
@@ -548,6 +550,7 @@ export default function SessionsPage() {
                           <input
                             type="number"
                             name="frameCount"
+                            maxLength={132}
                             defaultValue={editingSession?.frameCount || 0}
                             className="w-full mt-1 border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl p-3"
                           />
@@ -560,6 +563,7 @@ export default function SessionsPage() {
                             type="number"
                             step="0.1"
                             name="exposureTime"
+                            maxLength={132}
                             defaultValue={editingSession?.exposureTime}
                             className="w-full mt-1 border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl p-3"
                           />
@@ -576,6 +580,7 @@ export default function SessionsPage() {
                           name="totalDuration"
                           defaultValue={editingSession?.totalDuration}
                           placeholder="Ex: 3h 30min"
+                          maxLength={132}
                           className="w-full mt-1 border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl p-3"
                         />
                       </div>
@@ -691,6 +696,7 @@ export default function SessionsPage() {
                     </label>
                     <textarea
                       name="notes"
+                      maxLength={500}
                       defaultValue={editingSession?.notes}
                       className="w-full mt-1 border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl p-4 h-28 resize-none"
                     />

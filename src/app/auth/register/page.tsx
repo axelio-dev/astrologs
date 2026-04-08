@@ -41,7 +41,10 @@ export default function Register() {
     if (password.length < 8)
       return toast.error("Password must be 8+ characters");
     setStatus("loading");
-
+    if (username.length > 32) return toast.error("Username too long (max 32)");
+    if (email.length > 254) return toast.error("Email too long");
+    if (password.length > 128)
+      return toast.error("Password too long (max 128)");
     try {
       const { error } = await signUp.email({
         email,
@@ -122,6 +125,7 @@ export default function Register() {
                 />
                 <input
                   type="text"
+                  maxLength={32}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="NebulaRider"
@@ -142,6 +146,7 @@ export default function Register() {
                 <input
                   type="email"
                   value={email}
+                  maxLength={254}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="astro@example.com"
                   className="w-full pl-12 pr-4 h-12 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none transition-all"
@@ -161,6 +166,7 @@ export default function Register() {
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
+                  maxLength={128}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   className="w-full pl-12 pr-12 h-12 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none transition-all"
