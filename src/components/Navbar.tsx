@@ -106,10 +106,6 @@ export default function Navbar({ toggleSidebar, isSidebarOpen }: NavbarProps) {
             )}
           </button>
 
-          <button className="hidden sm:block p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
-            <Settings size={20} />
-          </button>
-
           <button
             onClick={handleLogout}
             className="p-2 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors group"
