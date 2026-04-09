@@ -7,7 +7,6 @@ import {
   Mail,
   Eye,
   EyeOff,
-  LogIn,
   Telescope,
   Sun,
   Moon,
@@ -34,17 +33,26 @@ export default function Register() {
 
   useEffect(() => setMounted(true), []);
 
+  const handleInputChange = (setter: (val: string) => void, value: string) => {
+    setter(value);
+    if (status === "error") setStatus("idle");
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (/\s/.test(username))
+      return toast.error("Username cannot contain spaces");
     if (!username || !email || !password)
       return toast.error("Please fill in all fields");
     if (password.length < 8)
       return toast.error("Password must be 8+ characters");
-    setStatus("loading");
     if (username.length > 32) return toast.error("Username too long (max 32)");
     if (email.length > 254) return toast.error("Email too long");
     if (password.length > 128)
       return toast.error("Password too long (max 128)");
+
+    setStatus("loading");
     try {
       const { error } = await signUp.email({
         email,
@@ -127,7 +135,9 @@ export default function Register() {
                   type="text"
                   maxLength={32}
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange(setUsername, e.target.value)
+                  }
                   placeholder="NebulaRider"
                   className="w-full pl-12 pr-4 h-12 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none transition-all"
                 />
@@ -147,7 +157,7 @@ export default function Register() {
                   type="email"
                   value={email}
                   maxLength={254}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => handleInputChange(setEmail, e.target.value)}
                   placeholder="astro@example.com"
                   className="w-full pl-12 pr-4 h-12 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none transition-all"
                 />
@@ -167,7 +177,9 @@ export default function Register() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   maxLength={128}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange(setPassword, e.target.value)
+                  }
                   placeholder="••••••••"
                   className="w-full pl-12 pr-12 h-12 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none transition-all"
                 />
@@ -183,8 +195,8 @@ export default function Register() {
 
             <button
               type="submit"
-              disabled={status === "loading"}
-              className="w-full h-12 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold shadow-lg shadow-red-600/20 active:scale-95 transition-all disabled:opacity-50 mt-2"
+              disabled={status === "loading" || status === "error"}
+              className="w-full h-12 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold shadow-lg shadow-red-600/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2"
             >
               {status === "loading" ? "Creating Account..." : "Sign Up"}
             </button>

@@ -1,16 +1,7 @@
 "use client";
 
 import { exo } from "@/app/fonts";
-import {
-  Eye,
-  EyeOff,
-  Lock,
-  LogIn,
-  Mail,
-  Telescope,
-  Sun,
-  Moon,
-} from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, Telescope, Sun, Moon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -32,11 +23,19 @@ export default function Login() {
 
   useEffect(() => setMounted(true), []);
 
+  const handleInputChange = (setter: (val: string) => void, value: string) => {
+    setter(value);
+    if (status === "error") setStatus("idle");
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!email || !password) return toast.error("Please fill in all fields");
-    setStatus("loading");
+    if (email.length > 254) return toast.error("Email too long");
+    if (password.length > 128)
+      return toast.error("Password too long (max 128)");
 
+    setStatus("loading");
     try {
       const { error } = await authClient.signIn.email({
         email,
@@ -44,9 +43,6 @@ export default function Login() {
         callbackURL: "/dashboard",
       });
 
-      if (email.length > 254) return toast.error("Email too long");
-      if (password.length > 128)
-        return toast.error("Password too long (max 128)");
       if (error) {
         toast.error(error.message ?? "Invalid credentials");
         setStatus("error");
@@ -119,7 +115,7 @@ export default function Login() {
                   type="email"
                   maxLength={254}
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => handleInputChange(setEmail, e.target.value)}
                   placeholder="name@example.com"
                   className="w-full pl-12 pr-4 h-12 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none transition-all"
                 />
@@ -141,7 +137,9 @@ export default function Login() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   maxLength={128}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange(setPassword, e.target.value)
+                  }
                   placeholder="••••••••"
                   className="w-full pl-12 pr-12 h-12 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none transition-all"
                 />
@@ -157,8 +155,8 @@ export default function Login() {
 
             <button
               type="submit"
-              disabled={status === "loading"}
-              className="w-full h-12 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold shadow-lg shadow-red-600/20 active:scale-95 transition-all disabled:opacity-50"
+              disabled={status === "loading" || status === "error"}
+              className="w-full h-12 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold shadow-lg shadow-red-600/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {status === "loading" ? "Connecting..." : "Sign In"}
             </button>

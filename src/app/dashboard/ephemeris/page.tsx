@@ -12,6 +12,7 @@ import {
   MapPin,
   Navigation,
   Eye,
+  RefreshCw,
 } from "lucide-react";
 import { exo } from "../../fonts";
 
@@ -80,6 +81,7 @@ export default function Ephemeris() {
   const { data: session, isPending } = authClient.useSession();
   const [weather, setWeather] = useState<AstroData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [searchCity, setSearchCity] = useState("");
   const [coords, setCoords] = useState({
@@ -123,56 +125,45 @@ export default function Ephemeris() {
     }
   }, []);
 
-  useEffect(() => {
-    let isCancelled = false;
+  const fetchAstroData = async (silent = false) => {
+    if (!coords.lat || !coords.lon) return;
 
-    async function fetchAstroData() {
-      if (!coords.lat || !coords.lon) return;
+    if (silent) setIsRefreshing(true);
+    else setLoading(true);
 
-      setLoading(true);
-      try {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,cloud_cover,wind_speed_10m,is_day&timezone=auto&forecast_days=3`;
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,cloud_cover,wind_speed_10m,is_day&timezone=auto&forecast_days=3`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+      const data = await response.json();
 
-        const response = await fetch(url);
+      if (!data || !data.hourly) throw new Error("Invalid API response");
 
-        if (!response.ok) {
-          throw new Error(`HTTP Error: ${response.status}`);
-        }
+      const now = new Date();
+      const startIndex = data.hourly.time.findIndex(
+        (t: string) => new Date(t) >= now,
+      );
+      const start = startIndex === -1 ? 0 : startIndex;
 
-        const data = await response.json();
-
-        if (!data || !data.hourly) {
-          throw new Error("Invalid API response: hourly data missing");
-        }
-
-        const now = new Date();
-        const startIndex = data.hourly.time.findIndex(
-          (t: string) => new Date(t) >= now,
-        );
-        const start = startIndex === -1 ? 0 : startIndex;
-
-        if (!isCancelled) {
-          setWeather({
-            time: data.hourly.time.slice(start, start + 48),
-            cloudCover: data.hourly.cloud_cover.slice(start, start + 48),
-            temperature: data.hourly.temperature_2m.slice(start, start + 48),
-            humidity: data.hourly.relative_humidity_2m.slice(start, start + 48),
-            dewPoint: data.hourly.dew_point_2m.slice(start, start + 48),
-            windSpeed: data.hourly.wind_speed_10m.slice(start, start + 48),
-            isDay: data.hourly.is_day.slice(start, start + 48),
-          });
-        }
-      } catch (error) {
-        console.error("Weather Fetch Error:", error);
-      } finally {
-        if (!isCancelled) setLoading(false);
-      }
+      setWeather({
+        time: data.hourly.time.slice(start, start + 48),
+        cloudCover: data.hourly.cloud_cover.slice(start, start + 48),
+        temperature: data.hourly.temperature_2m.slice(start, start + 48),
+        humidity: data.hourly.relative_humidity_2m.slice(start, start + 48),
+        dewPoint: data.hourly.dew_point_2m.slice(start, start + 48),
+        windSpeed: data.hourly.wind_speed_10m.slice(start, start + 48),
+        isDay: data.hourly.is_day.slice(start, start + 48),
+      });
+    } catch (error) {
+      console.error("Weather Fetch Error:", error);
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
     }
+  };
 
+  useEffect(() => {
     fetchAstroData();
-    return () => {
-      isCancelled = true;
-    };
   }, [coords.lat, coords.lon]);
 
   const moon = useMemo(() => {
@@ -257,10 +248,14 @@ export default function Ephemeris() {
                   />
                 </form>
                 <button
-                  onClick={() => window.location.reload()}
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2 text-sm font-medium shadow-sm"
+                  onClick={() => fetchAstroData(true)}
+                  disabled={isRefreshing}
+                  className="bg-red-500 hover:bg-red-600 disabled:opacity-70 text-white px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2 text-sm font-medium shadow-sm"
                 >
-                  <Navigation className="w-4 h-4" /> Refresh
+                  <RefreshCw
+                    className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`}
+                  />
+                  {isRefreshing ? "Updating..." : "Refresh"}
                 </button>
               </div>
             </div>

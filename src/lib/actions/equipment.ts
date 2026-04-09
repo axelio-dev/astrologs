@@ -9,18 +9,35 @@ import {
   EquipmentStatus,
 } from "../../../generated/prisma/client";
 
+const validateEquipmentInput = (name: string, notes?: string) => {
+  if (!name || name.trim().length === 0) {
+    throw new Error("Equipment name is required.");
+  }
+  if (name.length > 254) {
+    throw new Error("Name is too long (maximum 254 characters).");
+  }
+  if (notes && notes.length > 500) {
+    throw new Error("Notes are too long (maximum 500 characters).");
+  }
+};
+
 export async function createEquipment(formData: FormData) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
   if (!session || !session.user) {
-    throw new Error("You need to be connected to add equipments.");
+    throw new Error("You must be logged in to add equipment.");
   }
 
+  const name = formData.get("name") as string;
+  const notes = formData.get("notes") as string;
+
   try {
+    validateEquipmentInput(name, notes);
+
     const rawData = {
-      name: formData.get("name") as string,
+      name: name.trim(),
       category: formData.get("category") as EquipmentCategory,
       manufacturer: formData.get("manufacturer") as string,
       status: (formData.get("status") as EquipmentStatus) || "ACTIVE",
@@ -33,7 +50,7 @@ export async function createEquipment(formData: FormData) {
       focalResolution: formData.get("focalResolution") as string,
       fdRatio: formData.get("fdRatio") as string,
       otherSpec: formData.get("otherSpec") as string,
-      notes: formData.get("notes") as string,
+      notes: notes?.trim() || null,
 
       userId: session.user.id,
     };
@@ -43,11 +60,51 @@ export async function createEquipment(formData: FormData) {
     });
 
     revalidatePath("/equipments");
-
     return { success: true, data: newEquipment };
-  } catch (error) {
-    console.error("Prisma error :", error);
-    return { success: false, error: "Impossible to create the equipment." };
+  } catch (error: any) {
+    console.error("Prisma error:", error);
+    return {
+      success: false,
+      error: error.message || "Failed to create equipment.",
+    };
+  }
+}
+
+export async function updateEquipment(id: string, formData: FormData) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session || !session.user) throw new Error("Unauthorized");
+
+  const name = formData.get("name") as string;
+  const notes = formData.get("notes") as string;
+
+  try {
+    validateEquipmentInput(name, notes);
+
+    const data = {
+      name: name.trim(),
+      category: formData.get("category") as EquipmentCategory,
+      manufacturer: formData.get("manufacturer") as string,
+      status: formData.get("status") as EquipmentStatus,
+      diameterSensor: formData.get("diameterSensor") as string,
+      focalResolution: formData.get("focalResolution") as string,
+      fdRatio: formData.get("fdRatio") as string,
+      otherSpec: formData.get("otherSpec") as string,
+      notes: notes?.trim() || null,
+    };
+
+    await prisma.equipment.update({
+      where: { id, userId: session.user.id },
+      data,
+    });
+
+    revalidatePath("/equipments");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Update error:", error);
+    return {
+      success: false,
+      error: error.message || "Failed to update equipment.",
+    };
   }
 }
 
@@ -70,34 +127,15 @@ export async function getUserEquipments() {
 
 export async function deleteEquipment(id: string) {
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) throw new Error("Not authorised");
+  if (!session || !session.user) throw new Error("Unauthorized");
 
-  await prisma.equipment.delete({
-    where: { id, userId: session.user.id },
-  });
-  revalidatePath("/equipments");
-  return { success: true };
-}
-
-export async function updateEquipment(id: string, formData: FormData) {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) throw new Error("Not authorised");
-
-  const data = {
-    name: formData.get("name") as string,
-    category: formData.get("category") as EquipmentCategory,
-    manufacturer: formData.get("manufacturer") as string,
-    status: formData.get("status") as EquipmentStatus,
-    diameterSensor: formData.get("diameterSensor") as string,
-    focalResolution: formData.get("focalResolution") as string,
-    fdRatio: formData.get("fdRatio") as string,
-    notes: formData.get("notes") as string,
-  };
-
-  await prisma.equipment.update({
-    where: { id, userId: session.user.id },
-    data,
-  });
-  revalidatePath("/equipments");
-  return { success: true };
+  try {
+    await prisma.equipment.delete({
+      where: { id, userId: session.user.id },
+    });
+    revalidatePath("/equipments");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to delete equipment." };
+  }
 }

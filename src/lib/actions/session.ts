@@ -4,81 +4,68 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { SessionStatus } from "../../../generated/prisma/client";
-
-function getSessionData(formData: FormData, userId: string) {
-  const telescopeId = formData.get("telescopeId") as string | null;
-  const cameraId = formData.get("cameraId") as string | null;
-  const mountId = formData.get("mountId") as string | null;
-
-  const filterIds = formData.getAll("filterIds") as string[];
-
-  return {
-    target: formData.get("target") as string,
-    date: new Date(formData.get("date") as string),
-    totalDuration: formData.get("totalDuration") as string,
-    status:
-      (formData.get("status") as SessionStatus) || SessionStatus.IN_PROGRESS,
-    frameCount: Number(formData.get("frameCount") || 0),
-    exposureTime: Number(formData.get("exposureTime") || 0),
-    notes: (formData.get("notes") as string) || "",
-    userId,
-    telescopeId: telescopeId || null,
-    cameraId: cameraId || null,
-    mountId: mountId || null,
-    filterIds,
-  };
-}
 
 export async function createAstroSession(formData: FormData) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) throw new Error("Unauthorized");
 
-  try {
-    const data = getSessionData(formData, session.user.id);
+  const filterIds = formData.getAll("filterIds") as string[];
+  const accessoryIds = formData.getAll("accessoryIds") as string[];
 
-    await prisma.astroSession.create({ data });
+  await prisma.astroSession.create({
+    data: {
+      userId: session.user.id,
+      target: formData.get("target") as string,
+      date: new Date(formData.get("date") as string),
+      status: formData.get("status") as any,
+      frameCount: parseInt(formData.get("frameCount") as string) || 0,
+      exposureTime: parseFloat(formData.get("exposureTime") as string) || 0,
+      totalDuration: formData.get("totalDuration") as string,
+      notes: formData.get("notes") as string,
+      telescopeId: (formData.get("telescopeId") as string) || null,
+      mountId: (formData.get("mountId") as string) || null,
+      cameraId: (formData.get("cameraId") as string) || null,
+      filterIds: filterIds,
+      accessoryIds: accessoryIds,
+    },
+  });
 
-    revalidatePath("/dashboard/sessions");
-
-    return { success: true };
-  } catch (error) {
-    console.error("Error creating session:", error);
-    return { success: false, error: "Failed to create session." };
-  }
+  revalidatePath("/sessions");
 }
 
 export async function updateAstroSession(id: string, formData: FormData) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) throw new Error("Unauthorized");
 
-  try {
-    const existing = await prisma.astroSession.findUnique({ where: { id } });
-    if (!existing || existing.userId !== session.user.id) {
-      throw new Error("Unauthorized");
-    }
+  const filterIds = formData.getAll("filterIds") as string[];
+  const accessoryIds = formData.getAll("accessoryIds") as string[];
 
-    const data = getSessionData(formData, session.user.id);
+  await prisma.astroSession.update({
+    where: { id, userId: session.user.id },
+    data: {
+      target: formData.get("target") as string,
+      date: new Date(formData.get("date") as string),
+      status: formData.get("status") as any,
+      frameCount: parseInt(formData.get("frameCount") as string) || 0,
+      exposureTime: parseFloat(formData.get("exposureTime") as string) || 0,
+      totalDuration: formData.get("totalDuration") as string,
+      notes: formData.get("notes") as string,
+      telescopeId: (formData.get("telescopeId") as string) || null,
+      mountId: (formData.get("mountId") as string) || null,
+      cameraId: (formData.get("cameraId") as string) || null,
+      filterIds: filterIds,
+      accessoryIds: accessoryIds,
+    },
+  });
 
-    await prisma.astroSession.update({
-      where: { id },
-      data,
-    });
-
-    revalidatePath("/dashboard/sessions");
-
-    return { success: true };
-  } catch (error) {
-    console.error("Error updating session:", error);
-    return { success: false, error: "Failed to update session." };
-  }
+  revalidatePath("/sessions");
 }
 
 export async function getUserSessions() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) return [];
 
-  return prisma.astroSession.findMany({
+  return await prisma.astroSession.findMany({
     where: { userId: session.user.id },
     orderBy: { date: "desc" },
   });
@@ -88,19 +75,9 @@ export async function deleteSession(id: string) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) throw new Error("Unauthorized");
 
-  try {
-    const existing = await prisma.astroSession.findUnique({ where: { id } });
-    if (!existing || existing.userId !== session.user.id) {
-      throw new Error("Unauthorized");
-    }
+  await prisma.astroSession.delete({
+    where: { id, userId: session.user.id },
+  });
 
-    await prisma.astroSession.delete({ where: { id } });
-
-    revalidatePath("/dashboard/sessions");
-
-    return { success: true };
-  } catch (error) {
-    console.error("Error deleting session:", error);
-    return { success: false, error: "Failed to delete session." };
-  }
+  return { success: true };
 }
