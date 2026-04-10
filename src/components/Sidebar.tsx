@@ -84,9 +84,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             <p className="text-xs font-medium text-gray-700 dark:text-slate-200 truncate">
               {session?.user?.email || "Loading..."}
             </p>
-            <p className="text-[10px] text-gray-400 mt-2">
-              Version : Beta
-            </p>
+            <p className="text-[10px] text-gray-400 mt-2">Version : v1.0.0</p>
           </div>
         </footer>
       </aside>
