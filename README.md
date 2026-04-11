@@ -29,6 +29,11 @@
 
 ---
 
+## Preview
+
+You can try astrologs right now, thanks to this website: https://astrologs.orionhost.xyz
+
+---
 ## Installation
 
 ```bash
